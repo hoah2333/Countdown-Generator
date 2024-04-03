@@ -48,9 +48,6 @@
 
 <svelte:head>
 	<title>倒计时生成器</title>
-	<style lang="css" type="text/css">
-		@import '$lib/app.css';
-	</style>
 </svelte:head>
 
 <div id="main-wrapper">
