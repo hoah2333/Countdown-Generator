@@ -1,0 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap");
+
+body,
+textarea,
+body input {
+    font-family: Inter, "Noto Sans SC", "Noto Sans TC";
+    font-size: 1rem;
+    line-height: 1.5;
+}
