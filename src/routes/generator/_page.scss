@@ -10,7 +10,6 @@ textarea,
 input,
 select,
 button {
-	font-family: Inter, 'Noto Sans SC', 'Noto Sans TC', sans-serif;
 	font-size: 1rem;
 	font-weight: 400;
 	line-height: 1.5;
@@ -31,9 +30,6 @@ button {
 	}
 }
 
-button {
-	font-family: Inter, 'Noto Sans SC', 'Noto Sans TC';
-}
 .generated {
 	hr {
 		margin: 1.5rem 0;
