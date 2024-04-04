@@ -19,7 +19,7 @@
 
 		timeParam =
 			paramName == 'time'
-				? /^\d+$/.test(paramValue)
+				? /^[\d.]+$/.test(paramValue)
 					? parseInt(paramValue)
 					: paramValue
 				: timeParam;
@@ -63,7 +63,7 @@
 
 			timer =
 				(remainDay == 0 ? '' : `${remainDay} 日 `) +
-				(remainHour && remainDay == 0 ? '' : `${remainHour} 时 `) +
+				(remainHour == 0 && remainDay == 0 ? '' : `${remainHour} 时 `) +
 				(remainMinute == 0 && remainHour == 0 && remainDay == 0
 					? ''
 					: `${remainMinute < 10 ? `0${remainMinute}` : remainMinute} 分 `) +
