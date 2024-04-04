@@ -1,0 +1,52 @@
+#main-wrapper {
+	display: flex;
+	flex-direction: column;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
+}
+
+textarea,
+button {
+	font-family: Inter, 'Noto Sans SC', 'Noto Sans TC', sans-serif;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.5;
+}
+
+#component-wrapper {
+	blockquote {
+		position: relative;
+		margin: 1rem 0;
+		padding: 0.5rem;
+		border: 2px groove rgb(192, 192, 192);
+		display: flex;
+		flex-direction: column;
+
+		table {
+			border-spacing: 0;
+			border-collapse: collapse;
+			td,
+			th {
+				border: 2px groove rgb(192, 192, 192);
+				padding: 0.5rem;
+			}
+			th {
+				white-space: nowrap;
+			}
+		}
+		&.delete-source {
+			text-align: center;
+		}
+	}
+	textarea {
+		&#page-source {
+			min-width: min(80vw, 60rem);
+			min-height: 0.5rem;
+		}
+		&#delete-source {
+			min-width: min(90vw, 70rem);
+			min-height: 20rem;
+		}
+	}
+}

@@ -1,18 +1,18 @@
 #main-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-content: center;
-    justify-content: center;
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
 }
 
-:global(body),
-:global(textarea),
-:global(body input),
-:global(body select) {
+textarea,
+input,
+select,
+button {
 	font-family: Inter, 'Noto Sans SC', 'Noto Sans TC', sans-serif;
 	font-size: 1rem;
-    font-weight: 400;
+	font-weight: 400;
 	line-height: 1.5;
 }
 

@@ -1,0 +1,210 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
+
+	// process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+
+	interface pagesJsonType {
+		deleted_pages: [
+			{
+				context: string;
+				link: string;
+				page_type: string[];
+				release_score: number;
+				score: number;
+				time: number;
+				title: string;
+			}
+		];
+		errors: [
+			{
+				num: number;
+				id: string;
+				content: string;
+				url: string;
+				error_type: string;
+			}
+		];
+	}
+
+	let pagesJson: pagesJsonType;
+
+	onMount(async () => {
+		const response = await fetch('https://cn-cd-dx-tmp17.natfrp.cloud:32470/', {
+			method: 'GET'
+		});
+
+		if (!response.ok) {
+			throw new Error(response.status + response.statusText);
+		}
+		pagesJson = await response.json();
+
+		return pagesJson;
+	});
+	let output: string = '';
+	function clickOutputSaintafox() {
+		let deletedLinks: string[] = [];
+		let deletedOutput: string = '';
+		let normalOutputs: string[] = [];
+		let normalOutput: string = '';
+		let minusThirtyOutputs: string[] = [];
+		let minusThirtyOutput: string = '';
+		let translateOutputs: string[] = [];
+		let translateOutput: string = '';
+		for (let i = 0; i < pagesJson.deleted_pages.length; i++) {
+			let page = pagesJson.deleted_pages[i];
+			let deleteSource = `\n[[collapsible show="+ 页面源代码" hide="- 收起"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n\n`;
+
+			if (page.page_type.includes('deleted')) {
+				deletedLinks.push(page.link);
+			}
+			if (page.page_type.includes('normal')) {
+				normalOutputs.push(
+					`由于发布删除宣告时本页面已处于 ${page.release_score} 的低分，现已跌至 ${page.score} 分，且在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`
+				);
+			}
+			if (page.page_type.includes('minusThirty')) {
+				minusThirtyOutputs.push(
+					`由于本页面已处于 ${page.score} 的低分，故立即删除「${page.title}」。${deleteSource}`
+				);
+			}
+			if (page.page_type.includes('translate')) {
+				translateOutputs.push(
+					`由于翻译质量不佳，且译者在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`
+				);
+			}
+		}
+		deletedOutput =
+			deletedLinks[0] == null ? '' : `直接删除原作者自删的页面：\n${deletedLinks.join('\n')}`;
+		normalOutput = normalOutputs[0] == null ? '' : normalOutputs.join('\n');
+		minusThirtyOutput = minusThirtyOutput[0] == null ? '' : minusThirtyOutputs.join('\n');
+		translateOutput = translateOutputs[0] == null ? '' : translateOutputs.join('\n');
+
+		output = `${deletedOutput}\n\n${normalOutput}\n\n${minusThirtyOutput}\n\n${translateOutput}`;
+		copyHandler();
+	}
+	function clickOutputAmbersight() {
+		let deletedOutputs: string[] = [];
+		let deletedOutput: string = '';
+		let normalOutputs: string[] = [];
+		let normalOutput: string = '';
+		let minusThirtyOutputs: string[] = [];
+		let minusThirtyOutput: string = '';
+		let translateOutputs: string[] = [];
+		let translateOutput: string = '';
+		for (let i = 0; i < pagesJson.deleted_pages.length; i++) {
+			let page = pagesJson.deleted_pages[i];
+			let deleteSource = `\n[[collapsible show="[+] 页面源代码" hide="[-] 关闭"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n`;
+
+			if (page.page_type.includes('deleted')) {
+				deletedOutputs.push(`* ${page.title}（[# /${page.link.split('/').pop()}]）`);
+			}
+			if (page.page_type.includes('normal')) {
+				normalOutputs.push(
+					`[[li]]\n${page.title}（[# /${page.link.split('/').pop()}]）\n宣告时 ${page.release_score} 分，当前 ${page.score} 分，${page.time} 小时无异议。${deleteSource}[[/li]]`
+				);
+			}
+			if (page.page_type.includes('minusThirty') || page.page_type.includes('deleted')) {
+				minusThirtyOutputs.push(
+					`[[li]]\n${page.title}（[# /${page.link.split('/').pop()}]）\n当前 ${page.score} 分，直接删除。${deleteSource}[[/li]]`
+				);
+			}
+			if (page.page_type.includes('translate')) {
+				translateOutputs.push(
+					`[[li]]\n${page.title}（[# /${page.link.split('/').pop()}]）\n翻译质量不佳，${page.time} 小时无异议。${deleteSource}[[/li]]`
+				);
+			}
+		}
+		deletedOutput =
+			deletedOutputs[0] == null ? '' : `直接删除原作者自删的页面：\n${deletedOutputs.join('\n')}`;
+		normalOutput =
+			normalOutputs[0] == null
+				? ''
+				: `删除以下待删除的页面：\n[[ul style="margin-bottom: -0.4em;"]]\n${normalOutputs.join('\n')}\n${minusThirtyOutput[0] == null ? '' : minusThirtyOutputs.join('\n')}\n${(translateOutput = translateOutputs[0] == null ? '' : translateOutputs.join('\n'))}[[/ul]]`;
+
+		output = `${deletedOutput}\n\n${normalOutput}`;
+		copyHandler();
+	}
+
+	let isCopySucc: boolean;
+	let isCopied: boolean;
+	async function copyHandler() {
+		isCopied = true;
+		setTimeout(() => {
+			isCopied = false;
+		}, 3000);
+		try {
+			await navigator.clipboard.writeText(output);
+			isCopySucc = true;
+		} catch (e) {
+			console.error('复制失败', e);
+			isCopySucc = false;
+		}
+	}
+</script>
+
+<div id="main-wrapper">
+	<h1 class="title">倒计时生成器 - 工具页</h1>
+	<div class="info"></div>
+	<div id="component-wrapper">
+		{#if typeof pagesJson === 'object'}
+			<blockquote class="delete-source">
+				<div class="buttons">
+					<button type="button" on:click={clickOutputSaintafox}
+						>点此生成并复制删除公告 - Saintafox 版</button
+					>
+					<button type="button" on:click={clickOutputAmbersight}
+						>点此生成并复制删除公告 - Ambersight 版</button
+					>
+				</div>
+				<br />
+				<textarea id="delete-source">{output}</textarea>
+			</blockquote>
+
+			{#each pagesJson.deleted_pages as pages}
+				<blockquote>
+					<table>
+						<tr>
+							<th>文章标题</th>
+							<td>{pages.title}</td>
+						</tr>
+						<tr>
+							<th>文章源代码</th>
+							<td><textarea id="page-source">{pages.context}</textarea></td>
+						</tr>
+						<tr>
+							<th>文章链接</th>
+							<td><a href={pages.link}>{pages.link}</a></td>
+						</tr>
+						<tr>
+							<th>页面分数</th>
+							<td>{pages.release_score} -> {pages.score}</td>
+						</tr>
+						<tr>
+							<th>文章类型</th>
+							<td>
+								{#each pages.page_type as types}
+									{types == 'minusThirty' ? '低于-30 |' : ''}
+									{types == 'normal' ? '低分原创 |' : ''}
+									{types == 'translate' ? '低质翻译 |' : ''}
+									{types == 'deleted' ? '自删页面 |' : ''}
+								{/each}
+								{pages.time}小时后删除
+							</td>
+						</tr>
+					</table>
+				</blockquote>
+			{/each}
+		{/if}
+	</div>
+
+	{#if isCopied}
+		<div class="copy-text" transition:fly={{ x: 40, duration: 700 }}>
+			{isCopySucc ? '复制成功！' : '复制失败！'}
+		</div>
+	{/if}
+</div>
+
+<style lang="scss" type="text/scss">
+	@import './page';
+</style>
