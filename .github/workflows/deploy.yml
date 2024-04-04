@@ -1,15 +1,23 @@
-name: 部署至 Github Pages
-
+name: 构建&部署
 on:
   push:
     branches: 'main'
 
+permissions:
+  contents: write
+
 jobs:
-  build_site:
+  build:
+    concurrency: ci-${{ github.ref }}
+
+    name: 部署
+
     runs-on: ubuntu-latest
     steps:
       - name: 检查
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: 安装 Node.js
         uses: actions/setup-node@v4
@@ -26,24 +34,8 @@ jobs:
         run: |
           npm run build
 
-      - name: 上传
-        uses: actions/upload-pages-artifact@v3
+      - name: 部署至 GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4.5.0
         with:
-          path: 'build/'
-
-  deploy:
-    needs: build_site
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: 部署
-        id: deployment
-        uses: actions/deploy-pages@v4
+          branch: 'gh-pages'
+          folder: 'build/.'
