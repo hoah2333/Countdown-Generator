@@ -88,10 +88,6 @@
 	setInterval(outputTimer, 1000);
 </script>
 
-<svelte:head>
-	<title>倒计时生成器</title>
-</svelte:head>
-
 <div id="countdown-wrapper">
 	<span class="warning">{warning}</span>
 	<span class="text {time > now ? 'before' : 'after'}">{text}</span><br />

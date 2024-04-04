@@ -46,12 +46,10 @@
 	let isCopied: boolean;
 </script>
 
-<svelte:head>
-	<title>倒计时生成器</title>
-</svelte:head>
-
 <div id="main-wrapper">
 	<h1 class="title">倒计时生成器</h1>
+	<b>原作者：Aelanna（http://aelanna.com/Tools/deletion-time.html） </b>
+	<b>重制版作者：hoah2333</b>
 	<div class="info"></div>
 	<div id="component-wrapper">
 		<div class="whentime">
@@ -108,8 +106,10 @@
 						let outputDate = new Date(`${selectedDate} ${seletedTime}`).toISOString();
 						outputLink =
 							`${$page.url.origin}/timer/time=${outputDate}/type=${whenTypes}` +
-							(whenCustom[0] == '' ? '' : `/customBefore=${whenCustom[0]}`) +
-							(whenCustom[1] == '' ? '' : `/customAfter=${whenCustom[1]}`);
+							(whenCustom[0] == '' || whenTypes != 'custom'
+								? ''
+								: `/customBefore=${whenCustom[0]}`) +
+							(whenCustom[1] == '' || whenTypes != 'custom' ? '' : `/customAfter=${whenCustom[1]}`);
 					}}>生成！</button
 				>
 			</fieldset>
@@ -181,8 +181,12 @@
 						).toISOString();
 						outputLink =
 							`${$page.url.origin}/timer/time=${outputDate}/type=${afterTypes}` +
-							(afterCustom[0] == '' ? '' : `/customBefore=${afterCustom[0]}`) +
-							(afterCustom[1] == '' ? '' : `/customAfter=${afterCustom[1]}`);
+							(afterCustom[0] == '' || afterTypes != 'custom'
+								? ''
+								: `/customBefore=${afterCustom[0]}`) +
+							(afterCustom[1] == '' || afterTypes != 'custom'
+								? ''
+								: `/customAfter=${afterCustom[1]}`);
 					}}>生成！</button
 				>
 			</fieldset>
@@ -191,7 +195,7 @@
 		{#if generated}
 			<div class="generated">
 				<hr />
-				{#each [`[[iframe ${outputLink} style="width:400px;height:65px"]]`, `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width:400px;height:65px"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`, `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`] as outputs}
+				{#each [`[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`, `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`, `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`] as outputs}
 					<blockquote>
 						<a
 							href="/"
