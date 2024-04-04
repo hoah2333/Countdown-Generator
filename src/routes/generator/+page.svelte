@@ -109,7 +109,7 @@
 						outputLink =
 							`${$page.url.origin}/timer/time=${outputDate}/type=${whenTypes}` +
 							(whenCustom[0] == '' ? '' : `/customBefore=${whenCustom[0]}`) +
-							(whenCustom[1] == '' ? '' : `/customAfter= ${whenCustom[1]}`);
+							(whenCustom[1] == '' ? '' : `/customAfter=${whenCustom[1]}`);
 					}}>生成！</button
 				>
 			</fieldset>
@@ -182,7 +182,7 @@
 						outputLink =
 							`${$page.url.origin}/timer/time=${outputDate}/type=${afterTypes}` +
 							(afterCustom[0] == '' ? '' : `/customBefore=${afterCustom[0]}`) +
-							(afterCustom[1] == '' ? '' : `/customAfter= ${afterCustom[1]}`);
+							(afterCustom[1] == '' ? '' : `/customAfter=${afterCustom[1]}`);
 					}}>生成！</button
 				>
 			</fieldset>
@@ -191,7 +191,7 @@
 		{#if generated}
 			<div class="generated">
 				<hr />
-				{#each [`[[iframe ${outputLink} style="width:400px;height:60px"]]`, `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width:400px;height:60px"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`, `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 60px;"]]`] as outputs}
+				{#each [`[[iframe ${outputLink} style="width:400px;height:65px"]]`, `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width:400px;height:65px"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`, `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`] as outputs}
 					<blockquote>
 						<a
 							href="/"
@@ -217,7 +217,7 @@
 					src={outputLink}
 					frameborder="0"
 					width="400px"
-					height="60px"
+					height="65px"
 				/>
 			</div>
 		{/if}

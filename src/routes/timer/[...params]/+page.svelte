@@ -19,8 +19,8 @@
 
 		timeParam = paramName == 'time' ? paramValue : timeParam;
 		typeParam = paramName == 'type' ? paramValue : typeParam;
-		customParam[0] = paramName == 'custom1' ? paramValue : customParam[0];
-		customParam[1] = paramName == 'custom2' ? paramValue : customParam[1];
+		customParam[0] = paramName == 'customBefore' ? paramValue : customParam[0];
+		customParam[1] = paramName == 'customAfter' ? paramValue : customParam[1];
 	}
 
 	let params = {
@@ -49,7 +49,7 @@
 		if (time > now) {
 			text =
 				params.custom[0] != ''
-					? customParam[0]
+					? params.custom[0]
 					: params.type == 'delete'
 						? '该页面将在以下时间后被删除：'
 						: params.type == 'ban'
@@ -68,7 +68,7 @@
 		} else {
 			text =
 				params.custom[1] != ''
-					? customParam[1]
+					? params.custom[1]
 					: params.type == 'delete'
 						? '该页面已在以下时间前可被删除：'
 						: params.type == 'ban'
