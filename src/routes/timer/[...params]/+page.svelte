@@ -9,7 +9,7 @@
 
 	let warning: string = '';
 
-	let timeParam: string = '',
+	let timeParam: string | number = '',
 		typeParam: string = '',
 		customParam: string[] = ['', ''];
 
@@ -17,7 +17,12 @@
 		let paramName = paramsOri[i].split('=')[0];
 		let paramValue = paramsOri[i].split('=')[1];
 
-		timeParam = paramName == 'time' ? paramValue : timeParam;
+		timeParam =
+			paramName == 'time'
+				? /^\d+$/.test(paramValue)
+					? parseInt(paramValue)
+					: paramValue
+				: timeParam;
 		typeParam = paramName == 'type' ? paramValue : typeParam;
 		customParam[0] = paramName == 'customBefore' ? paramValue : customParam[0];
 		customParam[1] = paramName == 'customAfter' ? paramValue : customParam[1];
