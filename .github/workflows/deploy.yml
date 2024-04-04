@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: 部署至 Github Pages
 
 on:
   push:
@@ -8,25 +8,25 @@ jobs:
   build_site:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 检查
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: npm install
 
-      - name: build
+      - name: 构建
         env:
           BASE_PATH: '/${{ github.event.repository.name }}'
         run: |
           npm run build
 
-      - name: Upload Artifacts
+      - name: 上传
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'build/'
@@ -44,6 +44,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy
+      - name: 部署
         id: deployment
         uses: actions/deploy-pages@v4
