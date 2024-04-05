@@ -1,46 +1,27 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import type { pagesJsonType } from '$lib/types';
+	import { timerFunc } from '$lib/timer';
+	import type { timerTextType } from '$lib/types';
 
+	export let data: pagesJsonType;
+	let pagesJson: pagesJsonType = data;
 	// process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
-	interface pagesJsonType {
-		deleted_pages: [
-			{
-				context: string;
-				link: string;
-				page_type: string[];
-				release_score: number;
-				score: number;
-				time: number;
-				title: string;
-			}
-		];
-		errors: [
-			{
-				num: number;
-				id: string;
-				content: string;
-				url: string;
-				error_type: string;
-			}
-		];
-	}
+	// onMount(async () => {
+	// 	const response = await fetch('https://cn-cd-dx-tmp17.natfrp.cloud:32470/', {
+	// 		method: 'GET'
+	// 	});
 
-	let pagesJson: pagesJsonType;
+	// 	if (!response.ok) {
+	// 		throw new Error(response.status + response.statusText);
+	// 	}
+	// 	pagesJson = await response.json();
 
-	onMount(async () => {
-		const response = await fetch('https://cn-cd-dx-tmp17.natfrp.cloud:32470/', {
-			method: 'GET'
-		});
-
-		if (!response.ok) {
-			throw new Error(response.status + response.statusText);
-		}
-		pagesJson = await response.json();
-
-		return pagesJson;
-	});
+	// 	return pagesJson;
+	// });
 	let output: string = '';
 	function clickOutputSaintafox() {
 		let deletedLinks: string[] = [];
@@ -141,11 +122,36 @@
 			isCopySucc = false;
 		}
 	}
+	let timerTexts: timerTextType[] = [
+		{
+			warning: '',
+			status: '',
+			text: '',
+			timer: ''
+		}
+	];
+
+	pagesJson.pre_delete_pages.forEach((pages, index) => {
+		timerTexts[index] = timerFunc(
+			`${pages.timestamp == null ? '' : `time=${pages.timestamp * 1000}/`}type=delete`.split('/')
+		);
+		setInterval(() => {
+			timerTexts[index] = timerFunc(
+				`${pages.timestamp == null ? '' : `time=${pages.timestamp * 1000}/`}type=delete`.split('/')
+			);
+		}, 1000);
+	});
 </script>
 
 <div id="main-wrapper">
 	<h1 class="title">倒计时生成器 - 工具页</h1>
-	<div class="info"></div>
+	<div class="info">
+		{#if typeof pagesJson === 'object'}
+			<h4>
+				页面上次更新时间：{new Date(pagesJson.update_timestamp * 1000).toLocaleString()}
+			</h4>
+		{/if}
+	</div>
 	<div id="component-wrapper">
 		{#if typeof pagesJson === 'object'}
 			<blockquote class="delete-source">
@@ -169,12 +175,12 @@
 							<td>{pages.title}</td>
 						</tr>
 						<tr>
-							<th>文章源代码</th>
-							<td><textarea id="page-source">{pages.context}</textarea></td>
-						</tr>
-						<tr>
 							<th>文章链接</th>
 							<td><a href={pages.link}>{pages.link}</a></td>
+						</tr>
+						<tr>
+							<th>文章源代码</th>
+							<td><textarea id="page-source">{pages.context}</textarea></td>
 						</tr>
 						<tr>
 							<th>页面分数</th>
@@ -195,6 +201,51 @@
 					</table>
 				</blockquote>
 			{/each}
+			<hr />
+			{#each pagesJson.pre_delete_pages as pages, index}
+				<blockquote>
+					<table>
+						<tr>
+							<th>文章标题</th>
+							<td>{pages.title}</td>
+						</tr>
+						<tr>
+							<th>文章链接</th>
+							<td
+								><a href={pages.link} target="_blank" rel="noopener noreferrer">{pages.link}</a></td
+							>
+						</tr>
+						<tr>
+							<th>删除倒计时</th>
+							<td class="countdown">
+								<span class="warning">{timerTexts[index].warning}</span>
+								<span class="text {timerTexts[index].status}">{timerTexts[index].text}</span><br />
+								<span class="timer">{timerTexts[index].timer}</span>
+							</td>
+						</tr>
+						<tr>
+							<th>删除帖链接</th>
+							<td
+								><a
+									href="{pages.discuss_link}#{pages.post_id}"
+									target="_blank"
+									rel="noopener noreferrer">{pages.discuss_link}#{pages.post_id}</a
+								></td
+							>
+						</tr>
+						<tr>
+							<th>页面分数</th>
+							<td>{pages.release_score} -> {pages.score}</td>
+						</tr>
+						<tr>
+							<th>文章类型</th>
+							<td>{pages.isOriginal ? '原创文章' : '翻译文章'} | {pages.time}小时后删除</td>
+						</tr>
+					</table>
+				</blockquote>
+			{/each}
+		{:else}
+			<blockquote>正在加载中，请稍候……</blockquote>
 		{/if}
 	</div>
 

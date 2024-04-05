@@ -49,3 +49,38 @@ button {
 		}
 	}
 }
+
+.countdown {
+	min-width: min(80vw, 60rem);
+	.warning {
+		color: red;
+	}
+
+	.text {
+		&.before {
+			color: red;
+		}
+		&.after {
+			color: green;
+		}
+	}
+
+	.timer {
+		font-size: 1.2rem;
+		font-weight: bold;
+	}
+}
+
+.copy-text {
+	position: fixed;
+	display: flex;
+	right: 0rem;
+	top: 0;
+	border: 2px groove rgb(192, 192, 192);
+	box-sizing: border-box;
+	font-size: 2rem;
+	justify-content: center;
+	align-items: center;
+	min-width: 15rem;
+	min-height: 4rem;
+}
