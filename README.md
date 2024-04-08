@@ -2,9 +2,9 @@
 
 Countdown Generator for Wikidot Backrooms CN, by hoah2333.
 
-> Main Generator: https://timer.backroomswiki.cn/generator
-> Generated timer: https://timer.backroomswiki.cn/timer
-> Other tools: https://timer.backroomswiki.cn/tools
+Main Generator: https://timer.backroomswiki.cn/generator  
+Generated timer: https://timer.backroomswiki.cn/timer  
+Other tools: https://timer.backroomswiki.cn/tools
 
 ## Contributing
 
@@ -26,4 +26,5 @@ npm run preview -- --open
 ```
 
 ## License
+
 Because this project is relied to Wikidot, it is available under the same license as Wikidot, the [GNU Affero General Public License 3.0](https://www.gnu.org/licenses/agpl-3.0.en.html) (AGPL 3.0).
