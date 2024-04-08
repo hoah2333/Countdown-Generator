@@ -14,6 +14,10 @@ button {
 }
 
 #component-wrapper {
+	position: relative;
+	max-width: 960px;
+	width: 100%;
+
 	blockquote {
 		position: relative;
 		margin: 1rem 0;
@@ -40,18 +44,21 @@ button {
 	}
 	textarea {
 		&#page-source {
-			min-width: min(80vw, 60rem);
+			min-width: min(80vw, 50rem);
+			width: 100%;
 			min-height: 0.5rem;
 		}
 		&#delete-source {
-			min-width: min(90vw, 70rem);
+			min-width: min(80vw, 50rem);
+			width: 100%;
 			min-height: 20rem;
 		}
 	}
 }
 
 .countdown {
-	min-width: min(80vw, 60rem);
+	min-width: min(80vw, 50rem);
+	width: 100%;
 	.warning {
 		color: red;
 	}

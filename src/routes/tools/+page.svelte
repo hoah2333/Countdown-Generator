@@ -1,27 +1,13 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import type { pagesJsonType } from '$lib/types';
 	import { timerFunc } from '$lib/timer';
 	import type { timerTextType } from '$lib/types';
+	import Sidebar from '../Sidebar.svelte';
 
 	export let data: pagesJsonType;
 	let pagesJson: pagesJsonType = data;
-	// process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
-	// onMount(async () => {
-	// 	const response = await fetch('https://cn-cd-dx-tmp17.natfrp.cloud:32470/', {
-	// 		method: 'GET'
-	// 	});
-
-	// 	if (!response.ok) {
-	// 		throw new Error(response.status + response.statusText);
-	// 	}
-	// 	pagesJson = await response.json();
-
-	// 	return pagesJson;
-	// });
 	let output: string = '';
 	function clickOutputSaintafox() {
 		let deletedLinks: string[] = [];
@@ -142,6 +128,8 @@
 		}, 1000);
 	});
 </script>
+
+<Sidebar type="tools" />
 
 <div id="main-wrapper">
 	<h1 class="title">倒计时生成器 - 工具页</h1>

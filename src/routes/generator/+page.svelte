@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { fly } from 'svelte/transition';
+	import Sidebar from '../Sidebar.svelte';
 
 	let whenTypes: string = 'delete';
 	let afterTypes: string = 'delete';
@@ -45,6 +46,8 @@
 	let isCopySucc: boolean;
 	let isCopied: boolean;
 </script>
+
+<Sidebar type="generator" />
 
 <div id="main-wrapper">
 	<h1 class="title">倒计时生成器</h1>
