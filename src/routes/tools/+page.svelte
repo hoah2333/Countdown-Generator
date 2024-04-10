@@ -8,6 +8,13 @@
 	export let data: pagesJsonType;
 	let pagesJson: pagesJsonType = data;
 
+	let deletedPagesLink: number[] = [];
+	let deletedPagesType: string[] = [];
+	pagesJson.deleted_pages.forEach((pages, index) => {
+		deletedPagesType[index] = pages.page_type.includes('deleted') ? 'deleted' : pages.page_type[0];
+		deletedPagesLink[index] = index;
+	});
+
 	let output: string = '';
 	function clickOutputSaintafox() {
 		let deletedLinks: string[] = [];
@@ -18,24 +25,24 @@
 		let minusThirtyOutput: string = '';
 		let translateOutputs: string[] = [];
 		let translateOutput: string = '';
-		for (let i = 0; i < pagesJson.deleted_pages.length; i++) {
-			let page = pagesJson.deleted_pages[i];
+		for (let i = 0; i < deletedPagesLink.length; i++) {
+			let page = pagesJson.deleted_pages[deletedPagesLink[i]];
 			let deleteSource = `\n[[collapsible show="+ 页面源代码" hide="- 收起"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n\n`;
 
-			if (page.page_type.includes('deleted')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'deleted') {
 				deletedLinks.push(page.link);
 			}
-			if (page.page_type.includes('normal')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'normal') {
 				normalOutputs.push(
 					`由于发布删除宣告时本页面已处于 ${page.release_score} 的低分，现已跌至 ${page.score} 分，且在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`
 				);
 			}
-			if (page.page_type.includes('minusThirty')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'minusThirty') {
 				minusThirtyOutputs.push(
 					`由于本页面已处于 ${page.score} 的低分，故立即删除「${page.title}」。${deleteSource}`
 				);
 			}
-			if (page.page_type.includes('translate')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'translate') {
 				translateOutputs.push(
 					`由于翻译质量不佳，且译者在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`
 				);
@@ -43,11 +50,11 @@
 		}
 		deletedOutput =
 			deletedLinks[0] == null ? '' : `直接删除原作者自删的页面：\n${deletedLinks.join('\n')}`;
-		normalOutput = normalOutputs[0] == null ? '' : normalOutputs.join('\n');
-		minusThirtyOutput = minusThirtyOutput[0] == null ? '' : minusThirtyOutputs.join('\n');
-		translateOutput = translateOutputs[0] == null ? '' : translateOutputs.join('\n');
+		normalOutput = normalOutputs[0] == null ? '' : `\n${normalOutputs.join('\n')}`;
+		minusThirtyOutput = minusThirtyOutputs[0] == null ? '' : `\n${minusThirtyOutputs.join('\n')}`;
+		translateOutput = translateOutputs[0] == null ? '' : `\n${translateOutputs.join('\n')}`;
 
-		output = `${deletedOutput}\n\n${normalOutput}\n\n${minusThirtyOutput}\n\n${translateOutput}`;
+		output = `${deletedOutput}\n${normalOutput}\n${minusThirtyOutput}\n${translateOutput}`;
 		copyHandler();
 	}
 	function clickOutputAmbersight() {
@@ -56,27 +63,25 @@
 		let normalOutputs: string[] = [];
 		let normalOutput: string = '';
 		let minusThirtyOutputs: string[] = [];
-		let minusThirtyOutput: string = '';
 		let translateOutputs: string[] = [];
-		let translateOutput: string = '';
-		for (let i = 0; i < pagesJson.deleted_pages.length; i++) {
-			let page = pagesJson.deleted_pages[i];
+		for (let i = 0; i < deletedPagesLink.length; i++) {
+			let page = pagesJson.deleted_pages[deletedPagesLink[i]];
 			let deleteSource = `\n[[collapsible show="[+] 页面源代码" hide="[-] 关闭"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n`;
 
-			if (page.page_type.includes('deleted')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'deleted') {
 				deletedOutputs.push(`* ${page.title}（[# /${page.link.split('/').pop()}]）`);
 			}
-			if (page.page_type.includes('normal')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'normal') {
 				normalOutputs.push(
 					`[[li]]\n${page.title}（[# /${page.link.split('/').pop()}]）\n宣告时 ${page.release_score} 分，当前 ${page.score} 分，${page.time} 小时无异议。${deleteSource}[[/li]]`
 				);
 			}
-			if (page.page_type.includes('minusThirty') || page.page_type.includes('deleted')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'minusThirty') {
 				minusThirtyOutputs.push(
 					`[[li]]\n${page.title}（[# /${page.link.split('/').pop()}]）\n当前 ${page.score} 分，直接删除。${deleteSource}[[/li]]`
 				);
 			}
-			if (page.page_type.includes('translate')) {
+			if (deletedPagesType[deletedPagesLink[i]] == 'translate') {
 				translateOutputs.push(
 					`[[li]]\n${page.title}（[# /${page.link.split('/').pop()}]）\n翻译质量不佳，${page.time} 小时无异议。${deleteSource}[[/li]]`
 				);
@@ -85,9 +90,9 @@
 		deletedOutput =
 			deletedOutputs[0] == null ? '' : `直接删除原作者自删的页面：\n${deletedOutputs.join('\n')}`;
 		normalOutput =
-			normalOutputs[0] == null
+			normalOutputs[0] == null && minusThirtyOutputs[0] == null && translateOutputs[0] == null
 				? ''
-				: `删除以下待删除的页面：\n[[ul style="margin-bottom: -0.4em;"]]\n${normalOutputs.join('\n')}\n${minusThirtyOutput[0] == null ? '' : minusThirtyOutputs.join('\n')}\n${(translateOutput = translateOutputs[0] == null ? '' : translateOutputs.join('\n'))}[[/ul]]`;
+				: `删除以下待删除的页面：\n[[ul style="margin-bottom: -0.4em;"]]${`\n${normalOutputs.join('\n')}`}${minusThirtyOutputs[0] == null ? '' : `\n${minusThirtyOutputs.join('\n')}`}${translateOutputs[0] == null ? '' : `\n${translateOutputs.join('\n')}`}[[/ul]]`;
 
 		output = `${deletedOutput}\n\n${normalOutput}`;
 		copyHandler();
@@ -108,6 +113,7 @@
 			isCopySucc = false;
 		}
 	}
+
 	let timerTexts: timerTextType[] = [
 		{
 			warning: '',
@@ -116,7 +122,6 @@
 			timer: ''
 		}
 	];
-
 	pagesJson.pre_delete_pages.forEach((pages, index) => {
 		timerTexts[index] = timerFunc(
 			`${pages.timestamp == null ? '' : `time=${pages.timestamp * 1000}/`}type=delete`.split('/')
@@ -155,38 +160,84 @@
 				<textarea id="delete-source">{output}</textarea>
 			</blockquote>
 
-			{#each pagesJson.deleted_pages as pages}
+			{#each pagesJson.deleted_pages as pages, index}
 				<blockquote>
-					<table>
-						<tr>
-							<th>文章标题</th>
-							<td>{pages.title}</td>
-						</tr>
-						<tr>
-							<th>文章链接</th>
-							<td><a href={pages.link}>{pages.link}</a></td>
-						</tr>
-						<tr>
-							<th>文章源代码</th>
-							<td><textarea id="page-source">{pages.context}</textarea></td>
-						</tr>
-						<tr>
-							<th>页面分数</th>
-							<td>{pages.release_score} -> {pages.score}</td>
-						</tr>
-						<tr>
-							<th>文章类型</th>
-							<td>
-								{#each pages.page_type as types}
-									{types == 'minusThirty' ? '低于-30 |' : ''}
-									{types == 'normal' ? '低分原创 |' : ''}
-									{types == 'translate' ? '低质翻译 |' : ''}
-									{types == 'deleted' ? '自删页面 |' : ''}
-								{/each}
-								{pages.time}小时后删除
-							</td>
-						</tr>
-					</table>
+					<label for="{pages.link.split('/')[3]}-checkbox">
+						<table>
+							<tr>
+								<th>是否勾选</th>
+								<td>
+									<input
+										type="checkbox"
+										name={pages.link.split('/')[3]}
+										value={index}
+										id="{pages.link.split('/')[3]}-checkbox"
+										bind:group={deletedPagesLink}
+									/>
+								</td>
+							</tr>
+							<tr>
+								<th>文章标题</th>
+								<td>{pages.title}</td>
+							</tr>
+							<tr>
+								<th>文章链接</th>
+								<td><a href={pages.link}>{pages.link}</a></td>
+							</tr>
+							<tr>
+								<th>文章源代码</th>
+								<td><textarea id="page-source">{pages.context}</textarea></td>
+							</tr>
+							<tr>
+								<th>页面分数</th>
+								<td>{pages.release_score} -> {pages.score}</td>
+							</tr>
+							<tr>
+								<th>文章类型</th>
+								<td>
+									{#each pages.page_type as types}
+										{#if types == 'minusThirty'}
+											<input
+												type="radio"
+												name={pages.link.split('/')[3]}
+												id="{pages.link.split('/')[3]}-minusThirty"
+												value="minusThirty"
+												bind:group={deletedPagesType[index]}
+											/><label for="{pages.link.split('/')[3]}-minusThirty">低于-30</label>
+										{/if}
+										{#if types == 'normal'}
+											<input
+												type="radio"
+												name={pages.link.split('/')[3]}
+												id="{pages.link.split('/')[3]}-normal"
+												value="normal"
+												bind:group={deletedPagesType[index]}
+											/><label for="{pages.link.split('/')[3]}-normal">低分原创</label>
+										{/if}
+										{#if types == 'translate'}
+											<input
+												type="radio"
+												name={pages.link.split('/')[3]}
+												id="{pages.link.split('/')[3]}-translate"
+												value="translate"
+												bind:group={deletedPagesType[index]}
+											/><label for="{pages.link.split('/')[3]}-translate">低质翻译</label>
+										{/if}
+										{#if types == 'deleted'}
+											<input
+												type="radio"
+												name={pages.link.split('/')[3]}
+												id="{pages.link.split('/')[3]}-deleted"
+												value="deleted"
+												bind:group={deletedPagesType[index]}
+											/><label for="{pages.link.split('/')[3]}-deleted">自删页面</label>
+										{/if}
+									{/each}
+									| {pages.time}小时后删除
+								</td>
+							</tr>
+						</table>
+					</label>
 				</blockquote>
 			{/each}
 			<hr />
