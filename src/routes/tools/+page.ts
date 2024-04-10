@@ -2,7 +2,7 @@ import type { pagesJsonType } from '$lib/types';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 export const load: PageLoad = async ({ fetch }) => {
 	let pagesJson: pagesJsonType;
