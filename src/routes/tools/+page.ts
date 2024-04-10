@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch }) => {
 	let response: Response;
 
 	try {
-		response = await fetch('http://pve1.yserver.ink:5000/', {
+		response = await fetch('https://cn-cd-dx-tmp17.natfrp.cloud:32470/', {
 			method: 'GET',
 			credentials: 'omit'
 		});
