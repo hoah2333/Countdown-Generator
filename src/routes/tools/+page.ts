@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch }) => {
 	let response: Response;
 
 	try {
-		response = await fetch('https://cn-cd-dx-tmp17.natfrp.cloud:32470/', {
+		response = await fetch('https://fetch.backroomswiki.cn:32470/', {
 			method: 'GET',
 			credentials: 'omit'
 		});
