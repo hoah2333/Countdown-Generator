@@ -52,11 +52,14 @@
 <div id="main-wrapper">
 	<h1 class="title">倒计时生成器</h1>
 	<div class="info">
-		<b
-			>原作者：Aelanna（<a href="http://aelanna.com/Tools/deletion-time.html"
-				>http://aelanna.com/Tools/deletion-time.html</a
-			>）</b
-		><br />
+		<b>
+			原作者：Aelanna（
+			<a href="http://aelanna.com/Tools/deletion-time.html">
+				http://aelanna.com/Tools/deletion-time.html
+			</a>
+			）
+		</b>
+		<br />
 		<b>重制版作者：hoah2333</b>
 	</div>
 	<div id="component-wrapper">
@@ -118,8 +121,10 @@
 								? ''
 								: `/customBefore=${whenCustom[0]}`) +
 							(whenCustom[1] == '' || whenTypes != 'custom' ? '' : `/customAfter=${whenCustom[1]}`);
-					}}>生成！</button
+					}}
 				>
+					生成！
+				</button>
 			</fieldset>
 		</div>
 		<br />
@@ -220,8 +225,10 @@
 									console.error('复制失败', e);
 									isCopySucc = false;
 								}
-							}}>{outputs}</a
+							}}
 						>
+							{outputs}
+						</a>
 					</blockquote>
 				{/each}
 				<iframe

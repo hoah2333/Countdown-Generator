@@ -149,12 +149,12 @@
 		{#if typeof pagesJson === 'object'}
 			<blockquote class="delete-source">
 				<div class="buttons">
-					<button type="button" on:click={clickOutputSaintafox}
-						>点此生成并复制删除公告 - Saintafox 版</button
-					>
-					<button type="button" on:click={clickOutputAmbersight}
-						>点此生成并复制删除公告 - Ambersight 版</button
-					>
+					<button type="button" on:click={clickOutputSaintafox}>
+						点此生成并复制删除公告 - Saintafox 版
+					</button>
+					<button type="button" on:click={clickOutputAmbersight}>
+						点此生成并复制删除公告 - Ambersight 版
+					</button>
 				</div>
 				<br />
 				<textarea id="delete-source">{output}</textarea>
@@ -182,7 +182,9 @@
 							</tr>
 							<tr>
 								<th>文章链接</th>
-								<td><a href={pages.link}>{pages.link}</a></td>
+								<td>
+									<a href={pages.link} target="_blank" rel="noopener noreferrer">{pages.link}</a>
+								</td>
 							</tr>
 							<tr>
 								<th>文章源代码</th>
@@ -250,9 +252,9 @@
 						</tr>
 						<tr>
 							<th>文章链接</th>
-							<td
-								><a href={pages.link} target="_blank" rel="noopener noreferrer">{pages.link}</a></td
-							>
+							<td>
+								<a href={pages.link} target="_blank" rel="noopener noreferrer">{pages.link}</a>
+							</td>
 						</tr>
 						<tr>
 							<th>删除倒计时</th>
@@ -264,13 +266,15 @@
 						</tr>
 						<tr>
 							<th>删除帖链接</th>
-							<td
-								><a
+							<td>
+								<a
 									href="{pages.discuss_link}#{pages.post_id}"
 									target="_blank"
-									rel="noopener noreferrer">{pages.discuss_link}#{pages.post_id}</a
-								></td
-							>
+									rel="noopener noreferrer"
+								>
+									{pages.discuss_link}#{pages.post_id}
+								</a>
+							</td>
 						</tr>
 						<tr>
 							<th>页面分数</th>
