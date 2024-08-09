@@ -1,6 +1,6 @@
 {
 	"name": "countdown-generator",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -28,6 +28,7 @@
 		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.43.0",
+		"express": "^4.19.2",
 		"jquery": "^3.7.1",
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",

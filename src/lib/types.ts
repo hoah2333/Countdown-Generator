@@ -1,36 +1,35 @@
 export interface pagesJsonType {
+    pre_delete_pages: [
+        {
+            link: string;
+            title: string;
+            score: number;
+            release_score: number;
+            time: number;
+            discuss_link: string;
+            post_id: number;
+            isOriginal: boolean;
+            timestamp: number;
+        }
+    ];
     deleted_pages: [
         {
-            context: string;
             link: string;
-            page_type: string[];
-            release_score: number;
+            title: string;
             score: number;
             time: number;
-            title: string;
+            context: string;
+            page_type: string[];
+            release_score: number;
         }
     ];
     errors: [
         {
-            content: string;
-            error_type: string;
-            id: string;
-            page: number;
-            url: string;
-        }
-    ];
-    pre_delete_pages: [
-        {
-            discuss_link: string;
-            isOriginal: boolean;
-            link: string;
-            post_id: string;
-            post_page: number;
-            release_score: number;
-            score: number;
-            time: number;
-            timestamp: number;
+            threadId: number;
+            postId: number;
             title: string;
+            source: string;
+            errorType: string;
         }
     ];
     update_timestamp: number;
