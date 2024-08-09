@@ -1,49 +1,39 @@
-name: 部署至 Github Pages
+name: 发布
 
 on:
   push:
-    branches: 'main'
+    branches: ['master']
+
+permissions:
+  packages: write
+  contents: write
 
 jobs:
-  build_site:
+  deploy:
+    concurrency: ci-${{ github.ref }}
+
+    name: 发布
+
     runs-on: ubuntu-latest
     steps:
       - name: 检查
         uses: actions/checkout@v4
-
-      - name: 安装 Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-
-      - name: 安装依赖
-        run: npm install
+          ref: master
 
       - name: 构建
-        env:
-          BASE_PATH: '/${{ github.event.repository.name }}'
         run: |
+          npm install vite
           npm run build
+          zip latest.zip package.json package-lock.json
+          zip -r latest.zip build/
 
-      - name: 上传
-        uses: actions/upload-pages-artifact@v3
+      - name: 创建新发布
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          path: 'build/'
-
-  deploy:
-    needs: build_site
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: 部署
-        id: deployment
-        uses: actions/deploy-pages@v4
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: ${{ github.event.head_commit.message }}
+          files: |
+            latest.zip
