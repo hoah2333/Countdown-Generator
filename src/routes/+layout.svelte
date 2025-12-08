@@ -1,5 +1,6 @@
-<slot />
+<script lang="ts">
+	import './layout.css';
+    let children = $props();
+</script>
 
-<style lang="scss" type="text/scss">
-    @import "./layout";
-</style>
+{@render children?.()}

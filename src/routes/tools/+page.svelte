@@ -169,24 +169,109 @@
                 <textarea id="delete-source">{output}</textarea>
             </blockquote>
 
-            {#each pagesJson.errors as errors, index}{/each}
-
             {#each pagesJson.deleted_pages as pages, index}
                 <blockquote>
                     <label for="{pages.link.split('/')[3]}-checkbox">
                         <table>
-                            <tr>
-                                <th>是否勾选</th>
-                                <td>
-                                    <input
-                                        type="checkbox"
-                                        name={pages.link.split("/")[3]}
-                                        value={index}
-                                        id="{pages.link.split('/')[3]}-checkbox"
-                                        bind:group={deletedPagesLink}
-                                    />
-                                </td>
-                            </tr>
+                            <tbody>
+                                <tr>
+                                    <th>是否勾选</th>
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            name={pages.link.split("/")[3]}
+                                            value={index}
+                                            id="{pages.link.split('/')[3]}-checkbox"
+                                            bind:group={deletedPagesLink}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>文章标题</th>
+                                    <td>{pages.title}</td>
+                                </tr>
+                                <tr>
+                                    <th>文章链接</th>
+                                    <td>
+                                        <a
+                                            href={pages.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer">{pages.link}</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>文章源代码</th>
+                                    <td><textarea id="page-source">{pages.context}</textarea></td>
+                                </tr>
+                                <tr>
+                                    <th>页面分数</th>
+                                    <td>{pages.release_score} -> {pages.score}</td>
+                                </tr>
+                                <tr>
+                                    <th>文章类型</th>
+                                    <td>
+                                        {#each pages.page_type as types}
+                                            {#if types == "minusThirty"}
+                                                <input
+                                                    type="radio"
+                                                    name={pages.link.split("/")[3]}
+                                                    id="{pages.link.split('/')[3]}-minusThirty"
+                                                    value="minusThirty"
+                                                    bind:group={deletedPagesType[index]}
+                                                /><label
+                                                    for="{pages.link.split('/')[3]}-minusThirty"
+                                                >
+                                                    低于-30</label
+                                                >
+                                            {/if}
+                                            {#if types == "normal"}
+                                                <input
+                                                    type="radio"
+                                                    name={pages.link.split("/")[3]}
+                                                    id="{pages.link.split('/')[3]}-normal"
+                                                    value="normal"
+                                                    bind:group={deletedPagesType[index]}
+                                                /><label for="{pages.link.split('/')[3]}-normal">
+                                                    低分原创</label
+                                                >
+                                            {/if}
+                                            {#if types == "translate"}
+                                                <input
+                                                    type="radio"
+                                                    name={pages.link.split("/")[3]}
+                                                    id="{pages.link.split('/')[3]}-translate"
+                                                    value="translate"
+                                                    bind:group={deletedPagesType[index]}
+                                                /><label for="{pages.link.split('/')[3]}-translate">
+                                                    低质翻译</label
+                                                >
+                                            {/if}
+                                            {#if types == "deleted"}
+                                                <input
+                                                    type="radio"
+                                                    name={pages.link.split("/")[3]}
+                                                    id="{pages.link.split('/')[3]}-deleted"
+                                                    value="deleted"
+                                                    bind:group={deletedPagesType[index]}
+                                                /><label for="{pages.link.split('/')[3]}-deleted">
+                                                    自删页面</label
+                                                >
+                                            {/if}
+                                        {/each}
+                                        | {pages.time}小时后删除
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </label>
+                </blockquote>
+            {/each}
+            <hr />
+            {#each pagesJson.pre_delete_pages as pages, index}
+                <blockquote>
+                    <table>
+                        <tbody>
                             <tr>
                                 <th>文章标题</th>
                                 <td>{pages.title}</td>
@@ -200,8 +285,26 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>文章源代码</th>
-                                <td><textarea id="page-source">{pages.context}</textarea></td>
+                                <th>删除倒计时</th>
+                                <td class="countdown">
+                                    <span class="warning">{timerTexts[index].warning}</span>
+                                    <span class="text {timerTexts[index].status}"
+                                        >{timerTexts[index].text}</span
+                                    ><br />
+                                    <span class="timer">{timerTexts[index].timer}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>删除帖链接</th>
+                                <td>
+                                    <a
+                                        href="{pages.discuss_link}#{pages.post_id}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {pages.discuss_link}#{pages.post_id}
+                                    </a>
+                                </td>
                             </tr>
                             <tr>
                                 <th>页面分数</th>
@@ -209,108 +312,11 @@
                             </tr>
                             <tr>
                                 <th>文章类型</th>
-                                <td>
-                                    {#each pages.page_type as types}
-                                        {#if types == "minusThirty"}
-                                            <input
-                                                type="radio"
-                                                name={pages.link.split("/")[3]}
-                                                id="{pages.link.split('/')[3]}-minusThirty"
-                                                value="minusThirty"
-                                                bind:group={deletedPagesType[index]}
-                                            /><label for="{pages.link.split('/')[3]}-minusThirty">
-                                                低于-30</label
-                                            >
-                                        {/if}
-                                        {#if types == "normal"}
-                                            <input
-                                                type="radio"
-                                                name={pages.link.split("/")[3]}
-                                                id="{pages.link.split('/')[3]}-normal"
-                                                value="normal"
-                                                bind:group={deletedPagesType[index]}
-                                            /><label for="{pages.link.split('/')[3]}-normal">
-                                                低分原创</label
-                                            >
-                                        {/if}
-                                        {#if types == "translate"}
-                                            <input
-                                                type="radio"
-                                                name={pages.link.split("/")[3]}
-                                                id="{pages.link.split('/')[3]}-translate"
-                                                value="translate"
-                                                bind:group={deletedPagesType[index]}
-                                            /><label for="{pages.link.split('/')[3]}-translate">
-                                                低质翻译</label
-                                            >
-                                        {/if}
-                                        {#if types == "deleted"}
-                                            <input
-                                                type="radio"
-                                                name={pages.link.split("/")[3]}
-                                                id="{pages.link.split('/')[3]}-deleted"
-                                                value="deleted"
-                                                bind:group={deletedPagesType[index]}
-                                            /><label for="{pages.link.split('/')[3]}-deleted">
-                                                自删页面</label
-                                            >
-                                        {/if}
-                                    {/each}
-                                    | {pages.time}小时后删除
-                                </td>
+                                <td
+                                    >{pages.isOriginal ? "原创文章" : "翻译文章"} | {pages.time}小时后删除</td
+                                >
                             </tr>
-                        </table>
-                    </label>
-                </blockquote>
-            {/each}
-            <hr />
-            {#each pagesJson.pre_delete_pages as pages, index}
-                <blockquote>
-                    <table>
-                        <tr>
-                            <th>文章标题</th>
-                            <td>{pages.title}</td>
-                        </tr>
-                        <tr>
-                            <th>文章链接</th>
-                            <td>
-                                <a href={pages.link} target="_blank" rel="noopener noreferrer"
-                                    >{pages.link}</a
-                                >
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>删除倒计时</th>
-                            <td class="countdown">
-                                <span class="warning">{timerTexts[index].warning}</span>
-                                <span class="text {timerTexts[index].status}"
-                                    >{timerTexts[index].text}</span
-                                ><br />
-                                <span class="timer">{timerTexts[index].timer}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>删除帖链接</th>
-                            <td>
-                                <a
-                                    href="{pages.discuss_link}#{pages.post_id}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {pages.discuss_link}#{pages.post_id}
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>页面分数</th>
-                            <td>{pages.release_score} -> {pages.score}</td>
-                        </tr>
-                        <tr>
-                            <th>文章类型</th>
-                            <td
-                                >{pages.isOriginal ? "原创文章" : "翻译文章"} | {pages.time}小时后删除</td
-                            >
-                        </tr>
+                        </tbody>
                     </table>
                 </blockquote>
             {/each}

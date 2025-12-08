@@ -1,11 +1,10 @@
-import type { pagesJsonType } from "$lib/types";
-import type { PageServerLoad } from "./$types";
 import fs from "fs";
 
-export const load: PageServerLoad = async ({ fetch }) => {
-    let pagesJson: pagesJsonType = JSON.parse(
-        fs.readFileSync("../WikidotpagesAutomanager/data.json", "utf-8")
-    );
+import type { pagesJsonType } from "$lib/types";
+import type { PageServerLoad } from "./$types";
 
-    return pagesJson;
+export const load: PageServerLoad = async () => {
+  const pagesJson: pagesJsonType = JSON.parse(fs.readFileSync("../wd-delete/data.json", "utf-8"));
+
+  return pagesJson;
 };

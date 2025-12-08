@@ -1,7 +1,11 @@
+import tailwindcss from "@tailwindcss/vite";
+import devtoolsJson from "vite-plugin-devtools-json";
+import mkcert from "vite-plugin-mkcert";
+
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vitest/config";
-import mkcert from 'vite-plugin-mkcert';
+import { defineConfig } from "vite";
 
 export default defineConfig({
-    plugins: [sveltekit(), mkcert()]
+  plugins: [tailwindcss(), sveltekit(), mkcert(), devtoolsJson()],
+  build: { rollupOptions: { external: ["cssstyle"] } },
 });
