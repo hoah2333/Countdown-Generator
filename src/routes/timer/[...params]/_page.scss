@@ -1,19 +1,19 @@
 #countdown-wrapper {
-    .warning {
-        color: red;
-    }
+  .warning {
+    color: red;
+  }
 
-    .text {
-        &.before {
-            color: red;
-        }
-        &.after {
-            color: green;
-        }
+  .text {
+    &.before {
+      color: red;
     }
+    &.after {
+      color: green;
+    }
+  }
 
-    .timer {
-        font-size: 1.2rem;
-        font-weight: bold;
-    }
+  .timer {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
 }
