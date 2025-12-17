@@ -24,5 +24,5 @@
 </div>
 
 <style lang="scss" type="text/scss">
-  @import "./page";
+  @use "./page";
 </style>

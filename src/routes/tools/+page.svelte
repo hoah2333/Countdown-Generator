@@ -1,22 +1,27 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
-  import type { pagesJsonType } from "$lib/types";
-  import { timerFunc } from "$lib/timer";
-  import type { timerTextType } from "$lib/types";
   import Sidebar from "../Sidebar.svelte";
 
-  export let data: pagesJsonType;
-  let pagesJson: pagesJsonType = data;
+  import { timerFunc } from "$lib/timer";
+  import { fly } from "svelte/transition";
 
-  let deletedPagesLink: number[] = [];
-  let deletedPagesType: string[] = [];
-  pagesJson.deleted_pages.forEach((pages, index) => {
-    deletedPagesType[index] = pages.page_type.includes("deleted") ? "deleted" : pages.page_type[0];
-    deletedPagesLink[index] = index;
-  });
+  import type { pagesJsonType } from "$lib/types";
+  import type { timerTextType } from "$lib/types";
 
-  let output: string = "";
+  let { data }: { data: Record<string, pagesJsonType | null> } = $props();
+
+  let pagesJson: pagesJsonType | null = $derived(data.dbContent);
+
+  let deletedPagesLink: number[] = $derived(pagesJson ? pagesJson.deleted_pages.map((_, index) => index) : []);
+  let deletedPagesType: string[] = $derived(
+    pagesJson ?
+      pagesJson.deleted_pages.map((page) => (page.page_type.includes("deleted") ? "deleted" : page.page_type[0]))
+    : [],
+  );
+
+  let output: string = $state("");
   function clickOutputSaintafox() {
+    if (!pagesJson) return;
+
     let deletedLinks: string[] = [];
     let deletedOutput: string = "";
     let normalOutputs: string[] = [];
@@ -55,6 +60,8 @@
     copyHandler();
   }
   function clickOutputAmbersight() {
+    if (!pagesJson) return;
+
     let deletedOutputs: string[] = [];
     let deletedOutput: string = "";
     let normalOutputs: string[] = [];
@@ -94,59 +101,65 @@
     copyHandler();
   }
 
-  let isCopySucc: boolean;
-  let isCopied: boolean;
-  async function copyHandler() {
-    isCopied = true;
-    setTimeout(() => {
-      isCopied = false;
-    }, 3000);
+  let copyStatus = $state<{ isVisible: boolean; message: string; isSuccess: boolean }>({
+    isVisible: false,
+    message: "",
+    isSuccess: false,
+  });
+
+  async function copyHandler(): Promise<void> {
+    copyStatus.isVisible = false;
+
     try {
+      if (!navigator.clipboard) {
+        throw new Error("浏览器不支持剪贴板API");
+      }
+
       await navigator.clipboard.writeText(output);
-      isCopySucc = true;
-    } catch (e) {
-      console.error("复制失败", e);
-      isCopySucc = false;
+      copyStatus = { isVisible: true, message: "复制成功！", isSuccess: true };
+    } catch (error) {
+      console.error("复制失败:", error);
+      copyStatus = { isVisible: true, message: "复制失败，请手动复制", isSuccess: false };
     }
+
+    setTimeout(() => {
+      copyStatus.isVisible = false;
+    }, 3000);
   }
 
-  let timerTexts: timerTextType[] = [{ warning: "", status: "", text: "", timer: "" }];
-  pagesJson.pre_delete_pages.forEach((pages, index) => {
-    timerTexts[index] = timerFunc(
-      `${pages.timestamp == null ? "" : `time=${pages.timestamp * 1000}/`}type=delete`.split("/"),
-    );
-    setInterval(() => {
-      timerTexts[index] = timerFunc(
-        `${pages.timestamp == null ? "" : `time=${pages.timestamp * 1000}/`}type=delete`.split("/"),
-      );
-    }, 1000);
-  });
+  let timerTexts: timerTextType[] = $derived(
+    pagesJson ?
+      pagesJson.pre_delete_pages.map((pages, index) =>
+        timerFunc(`${pages.timestamp == null ? "" : `time=${pages.timestamp * 1000}/`}type=delete`.split("/")),
+      )
+    : [],
+  );
 </script>
 
 <Sidebar type="tools" />
 
-<div id="main-wrapper">
-  <h1 class="title">倒计时生成器 - 工具页</h1>
-  <div class="info">
-    {#if typeof pagesJson === "object"}
-      <h4>
-        页面上次更新时间：{new Date(pagesJson.update_timestamp * 1000).toLocaleString()}
+<div class="flex flex-col align-center justify-center items-center mt-4">
+  <h1 class="text-2xl font-bold">倒计时生成器 - 工具页</h1>
+  <div class="mt-2">
+    {#if pagesJson}
+      <h4 class="text-sm">
+        页面上次更新时间：{new Date(pagesJson.update_timestamp).toLocaleString()}
       </h4>
     {/if}
   </div>
-  <div id="component-wrapper">
-    {#if typeof pagesJson === "object"}
-      <blockquote class="delete-source">
+  <div class="relative max-w-4xl w-full" id="component-wrapper">
+    {#if pagesJson}
+      <blockquote class="relative my-4 p-2 border-2 border-gray-400 flex flex-col text-center">
         <div class="buttons">
-          <button type="button" on:click={clickOutputSaintafox}> 点此生成并复制删除公告 - Saintafox 版 </button>
-          <button type="button" on:click={clickOutputAmbersight}> 点此生成并复制删除公告 - Ambersight 版 </button>
+          <button type="button" onclick={clickOutputSaintafox}> 点此生成并复制删除公告 - Saintafox 版 </button>
+          <button type="button" onclick={clickOutputAmbersight}> 点此生成并复制删除公告 - Ambersight 版 </button>
         </div>
         <br />
         <textarea id="delete-source">{output}</textarea>
       </blockquote>
 
       {#each pagesJson.deleted_pages as pages, index}
-        <blockquote>
+        <blockquote class="relative my-4 p-2 border-2 border-gray-400 flex flex-col">
           <label for="{pages.link.split('/')[3]}-checkbox">
             <table>
               <tbody>
@@ -277,13 +290,18 @@
     {/if}
   </div>
 
-  {#if isCopied}
-    <div class="copy-text" transition:fly={{ x: 40, duration: 700 }}>
-      {isCopySucc ? "复制成功！" : "复制失败！"}
+  {#if copyStatus.isVisible}
+    <div
+      class="copy-text"
+      transition:fly={{ x: 40, duration: 700 }}
+      class:text-green-600={copyStatus.isSuccess}
+      class:text-red-600={!copyStatus.isSuccess}
+    >
+      {copyStatus.message}
     </div>
   {/if}
 </div>
 
 <style lang="scss" type="text/scss">
-  @import "./page";
+  @use "./page";
 </style>

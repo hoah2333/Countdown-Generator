@@ -14,17 +14,14 @@ button {
 }
 
 #component-wrapper {
-  position: relative;
-  max-width: 960px;
-  width: 100%;
 
   blockquote {
-    position: relative;
-    margin: 1rem 0;
-    padding: 0.5rem;
-    border: 2px groove rgb(192, 192, 192);
-    display: flex;
-    flex-direction: column;
+    // position: relative;
+    // margin: 1rem 0;
+    // padding: 0.5rem;
+    // border: 2px groove rgb(192, 192, 192);
+    // display: flex;
+    // flex-direction: column;
 
     table {
       border-spacing: 0;
@@ -37,9 +34,6 @@ button {
       th {
         white-space: nowrap;
       }
-    }
-    &.delete-source {
-      text-align: center;
     }
   }
   textarea {
