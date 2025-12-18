@@ -1,17 +1,19 @@
 <script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+
   let { type }: { type: string } = $props();
 
   const linkList = ["generator", "tools"];
   const linkTextList = ["Generator", "Tools"];
 </script>
 
-<div class="fixed top-4 left-4 xl:left-[calc((100vw-960px)/2-7rem)] border-2 border-gray-400 bg-white p-1 z-10">
+<div class="mt-4 h-min rounded-md border-2 border-gray-400 bg-white px-4 py-1">
   {#each linkList as link, index}
     <div>
       {#if type == link}
-        &gt; {linkTextList[index]}
+        <Button variant="link" class="p-0" disabled>&gt; {linkTextList[index]}</Button>
       {:else}
-        <a href={`/${link}`}>{linkTextList[index]}</a>
+        <Button variant="link" class="p-0" href={`/${link}`}>{linkTextList[index]}</Button>
       {/if}
     </div>
   {/each}

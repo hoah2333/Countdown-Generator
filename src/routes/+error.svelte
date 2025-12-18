@@ -2,7 +2,7 @@
   let { status, error }: { status: number; error: Error & { message?: string } } = $props();
 </script>
 
-<div class="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4 text-center">
+<div class="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
   <h1 class="text-4xl font-bold text-red-500">
     糟糕！这个页面出现了 {status} 错误！
   </h1>
@@ -34,7 +34,7 @@
 
   <a
     href="/generator"
-    class="mt-6 inline-flex items-center rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-400"
+    class="mt-6 inline-flex items-center rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:bg-blue-500 dark:hover:bg-blue-400"
   >
     点此返回倒计时生成器
   </a>

@@ -1,307 +1,297 @@
 <script lang="ts">
   import Sidebar from "../Sidebar.svelte";
 
-  import { timerFunc } from "$lib/timer";
-  import { fly } from "svelte/transition";
+  import { Button } from "$lib/components/ui/button";
+  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { Label } from "$lib/components/ui/label";
+  import { RadioGroup, RadioGroupItem } from "$lib/components/ui/radio-group";
+  import { Table, TableBody, TableCell, TableHead, TableRow } from "$lib/components/ui/table";
+  import { Textarea } from "$lib/components/ui/textarea";
+  import { Timer } from "$lib/components/timer";
+  import { toast } from "svelte-sonner";
 
-  import type { pagesJsonType } from "$lib/types";
-  import type { timerTextType } from "$lib/types";
+  import type { PagesJsonType, DeletedPagesType, TimerTextType } from "$lib/types";
 
-  let { data }: { data: Record<string, pagesJsonType | null> } = $props();
+  let { data = $bindable() }: { data: Record<string, PagesJsonType | null> } = $props();
 
-  let pagesJson: pagesJsonType | null = $derived(data.dbContent);
+  let pagesJson: PagesJsonType | null = $derived(data.dbContent);
 
-  let deletedPagesLink: number[] = $derived(pagesJson ? pagesJson.deleted_pages.map((_, index) => index) : []);
-  let deletedPagesType: string[] = $derived(
-    pagesJson ?
-      pagesJson.deleted_pages.map((page) => (page.page_type.includes("deleted") ? "deleted" : page.page_type[0]))
-    : [],
-  );
+  let selectedPagesIndex: number[] = $state([]);
+  let selectedPagesType: string[] = $state([]);
 
-  let output: string = $state("");
-  function clickOutputSaintafox() {
-    if (!pagesJson) return;
-
-    let deletedLinks: string[] = [];
-    let deletedOutput: string = "";
-    let normalOutputs: string[] = [];
-    let normalOutput: string = "";
-    let minusThirtyOutputs: string[] = [];
-    let minusThirtyOutput: string = "";
-    let translateOutputs: string[] = [];
-    let translateOutput: string = "";
-    for (let i = 0; i < deletedPagesLink.length; i++) {
-      let page = pagesJson.deleted_pages[deletedPagesLink[i]];
-      let deleteSource = `\n[[collapsible show="+ 页面源代码" hide="- 收起"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n\n`;
-
-      if (deletedPagesType[deletedPagesLink[i]] == "deleted") {
-        deletedLinks.push(page.link);
-      }
-      if (deletedPagesType[deletedPagesLink[i]] == "normal") {
-        normalOutputs.push(
-          `由于发布删除宣告时本页面已处于 ${page.release_score} 的低分，现已跌至 ${page.score} 分，且在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`,
-        );
-      }
-      if (deletedPagesType[deletedPagesLink[i]] == "minusThirty") {
-        minusThirtyOutputs.push(`由于本页面已处于 ${page.score} 的低分，故立即删除「${page.title}」。${deleteSource}`);
-      }
-      if (deletedPagesType[deletedPagesLink[i]] == "translate") {
-        translateOutputs.push(
-          `由于翻译质量不佳，且译者在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`,
-        );
-      }
+  $effect(() => {
+    if (pagesJson && selectedPagesIndex.length === 0) {
+      selectedPagesIndex = pagesJson.deleted_pages.map((_, index) => index);
     }
-    deletedOutput = deletedLinks[0] == null ? "" : `直接删除原作者自删的页面：\n${deletedLinks.join("\n")}`;
-    normalOutput = normalOutputs[0] == null ? "" : `\n${normalOutputs.join("\n")}`;
-    minusThirtyOutput = minusThirtyOutputs[0] == null ? "" : `\n${minusThirtyOutputs.join("\n")}`;
-    translateOutput = translateOutputs[0] == null ? "" : `\n${translateOutputs.join("\n")}`;
-
-    output = `${deletedOutput}\n${normalOutput}\n${minusThirtyOutput}\n${translateOutput}`;
-    copyHandler();
-  }
-  function clickOutputAmbersight() {
-    if (!pagesJson) return;
-
-    let deletedOutputs: string[] = [];
-    let deletedOutput: string = "";
-    let normalOutputs: string[] = [];
-    let normalOutput: string = "";
-    let minusThirtyOutputs: string[] = [];
-    let translateOutputs: string[] = [];
-    for (let i = 0; i < deletedPagesLink.length; i++) {
-      let page = pagesJson.deleted_pages[deletedPagesLink[i]];
-      let deleteSource = `\n[[collapsible show="[+] 页面源代码" hide="[-] 关闭"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n`;
-
-      if (deletedPagesType[deletedPagesLink[i]] == "deleted") {
-        deletedOutputs.push(`* ${page.title}（[# /${page.link.split("/").pop()}]）`);
-      }
-      if (deletedPagesType[deletedPagesLink[i]] == "normal") {
-        normalOutputs.push(
-          `[[li]]\n${page.title}（[# /${page.link.split("/").pop()}]）\n宣告时 ${page.release_score} 分，当前 ${page.score} 分，${page.time} 小时无异议。${deleteSource}[[/li]]`,
-        );
-      }
-      if (deletedPagesType[deletedPagesLink[i]] == "minusThirty") {
-        minusThirtyOutputs.push(
-          `[[li]]\n${page.title}（[# /${page.link.split("/").pop()}]）\n当前 ${page.score} 分，直接删除。${deleteSource}[[/li]]`,
-        );
-      }
-      if (deletedPagesType[deletedPagesLink[i]] == "translate") {
-        translateOutputs.push(
-          `[[li]]\n${page.title}（[# /${page.link.split("/").pop()}]）\n翻译质量不佳，${page.time} 小时无异议。${deleteSource}[[/li]]`,
-        );
-      }
+    if (pagesJson && selectedPagesType.length === 0) {
+      selectedPagesType = pagesJson.deleted_pages.map((page: DeletedPagesType) =>
+        page.page_type.includes("deleted") ? "deleted" : page.page_type[0],
+      );
     }
-    deletedOutput = deletedOutputs[0] == null ? "" : `直接删除原作者自删的页面：\n${deletedOutputs.join("\n")}`;
-    normalOutput =
-      normalOutputs[0] == null && minusThirtyOutputs[0] == null && translateOutputs[0] == null ?
-        ""
-      : `删除以下待删除的页面：\n[[ul style="margin-bottom: -0.4em;"]]${`\n${normalOutputs.join("\n")}`}${minusThirtyOutputs[0] == null ? "" : `\n${minusThirtyOutputs.join("\n")}`}${translateOutputs[0] == null ? "" : `\n${translateOutputs.join("\n")}`}[[/ul]]`;
-
-    output = `${deletedOutput}\n\n${normalOutput}`;
-    copyHandler();
-  }
-
-  let copyStatus = $state<{ isVisible: boolean; message: string; isSuccess: boolean }>({
-    isVisible: false,
-    message: "",
-    isSuccess: false,
   });
 
-  async function copyHandler(): Promise<void> {
-    copyStatus.isVisible = false;
+  let output: string = $state("");
+  async function clickOutputSaintafox(): Promise<void> {
+    if (!pagesJson) return;
 
+    const outputPage: { page: DeletedPagesType; pageType: string }[] = selectedPagesIndex
+      .map((index: number) => ({ page: pagesJson.deleted_pages[index], pageType: selectedPagesType[index] }))
+      .sort((a, b) => a.pageType.localeCompare(b.pageType));
+
+    output = outputPage.reduce(
+      (acc: string, { page, pageType }: { page: DeletedPagesType; pageType: string }, index: number) => {
+        const deleteSource = `[[collapsible show="+ 页面源代码" hide="- 收起"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n`;
+
+        switch (pageType) {
+          case "deleted":
+            if (index === 0) {
+              return `直接删除原作者自删的页面：\n${page.link}\n`;
+            }
+            return acc + `${page.link}\n`;
+          case "normal":
+            return (
+              acc +
+              `\n\n由于发布删除宣告时本页面已处于 ${page.release_score} 的低分，现已跌至 ${page.score} 分，且在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`
+            );
+          case "minusThirty":
+            return acc + `\n\n由于本页面已处于 ${page.score} 的低分，故立即删除「${page.title}」。${deleteSource}`;
+          case "translate":
+            return (
+              acc +
+              `\n\n由于翻译质量不佳，且译者在宣告删除后的 ${page.time} 小时内无异议，故删除「${page.title}」。${deleteSource}`
+            );
+          default:
+            return acc;
+        }
+      },
+      "",
+    );
+
+    await copyHandler(output);
+  }
+  async function clickOutputAmbersight(): Promise<void> {
+    if (!pagesJson) return;
+
+    const outputPage: { page: DeletedPagesType; pageType: string }[] = selectedPagesIndex
+      .map((index) => ({ page: pagesJson.deleted_pages[index], pageType: selectedPagesType[index] }))
+      .sort((a, b) => a.pageType.localeCompare(b.pageType));
+
+    let hasOpenList: boolean = false;
+
+    output = outputPage.reduce(
+      (acc: string, { page, pageType }: { page: DeletedPagesType; pageType: string }, index: number) => {
+        const deleteSource = `\n[[collapsible show="[+] 页面源代码" hide="[-] 关闭"]]\n[[code]]\n${page.context}\n[[/code]]\n[[/collapsible]]\n`;
+
+        if (pageType !== "deleted" && (index === 0 || outputPage[index - 1].pageType === "deleted")) {
+          acc += `\n删除以下待删除的页面：\n[[ul style="margin-bottom: -0.4em;"]]`;
+          hasOpenList = true;
+        }
+
+        switch (pageType) {
+          case "deleted":
+            const deletedFormat = `* ${page.title}（[# /${page.link.split("/").pop()}]）\n`;
+            if (index === 0) {
+              return acc + `直接删除原作者自删的页面：\n${deletedFormat}`;
+            }
+            return acc + deletedFormat;
+          case "normal":
+            return (
+              acc +
+              `[[li]]\n${page.title}（[# /${page.link.split("/").pop()}]）\n宣告时 ${page.release_score} 分，当前 ${page.score} 分，${page.time} 小时无异议。${deleteSource}[[/li]]`
+            );
+          case "minusThirty":
+            return (
+              acc +
+              `[[li]]\n${page.title}（[# /${page.link.split("/").pop()}]）\n当前 ${page.score} 分，直接删除。${deleteSource}[[/li]]`
+            );
+          case "translate":
+            return (
+              acc +
+              `[[li]]\n${page.title}（[# /${page.link.split("/").pop()}]）\n翻译质量不佳，${page.time} 小时无异议。${deleteSource}[[/li]]`
+            );
+          default:
+            return acc;
+        }
+      },
+      "",
+    );
+
+    if (hasOpenList) {
+      output += `\n[[/ul]]`;
+    }
+
+    await copyHandler(output);
+  }
+
+  async function copyHandler(output: string): Promise<void> {
     try {
       if (!navigator.clipboard) {
         throw new Error("浏览器不支持剪贴板API");
       }
 
       await navigator.clipboard.writeText(output);
-      copyStatus = { isVisible: true, message: "复制成功！", isSuccess: true };
+      toast.success("复制成功！");
     } catch (error) {
       console.error("复制失败:", error);
-      copyStatus = { isVisible: true, message: "复制失败，请手动复制", isSuccess: false };
+      toast.error("复制失败，请手动复制");
     }
-
-    setTimeout(() => {
-      copyStatus.isVisible = false;
-    }, 3000);
   }
-
-  let timerTexts: timerTextType[] = $derived(
-    pagesJson ?
-      pagesJson.pre_delete_pages.map((pages, index) =>
-        timerFunc(`${pages.timestamp == null ? "" : `time=${pages.timestamp * 1000}/`}type=delete`.split("/")),
-      )
-    : [],
-  );
 </script>
 
-<Sidebar type="tools" />
+<div class="flex flex-col justify-center gap-2 md:flex-row">
+  <Sidebar type="tools" />
 
-<div class="flex flex-col align-center justify-center items-center mt-4">
-  <h1 class="text-2xl font-bold">倒计时生成器 - 工具页</h1>
-  <div class="mt-2">
-    {#if pagesJson}
-      <h4 class="text-sm">
-        页面上次更新时间：{new Date(pagesJson.update_timestamp).toLocaleString()}
-      </h4>
-    {/if}
-  </div>
-  <div class="relative max-w-4xl w-full" id="component-wrapper">
-    {#if pagesJson}
-      <blockquote class="relative my-4 p-2 border-2 border-gray-400 flex flex-col text-center">
-        <div class="buttons">
-          <button type="button" onclick={clickOutputSaintafox}> 点此生成并复制删除公告 - Saintafox 版 </button>
-          <button type="button" onclick={clickOutputAmbersight}> 点此生成并复制删除公告 - Ambersight 版 </button>
+  <div class="align-center mt-4 flex flex-col items-center justify-center">
+    <h1 class="text-2xl font-bold">倒计时生成器 - 工具页</h1>
+
+    <div class="mt-2">
+      {#if pagesJson}
+        <div class="text-sm">
+          页面上次更新时间：{new Date(pagesJson.update_timestamp).toLocaleString()}
         </div>
-        <br />
-        <textarea id="delete-source">{output}</textarea>
-      </blockquote>
-
-      {#each pagesJson.deleted_pages as pages, index}
-        <blockquote class="relative my-4 p-2 border-2 border-gray-400 flex flex-col">
-          <label for="{pages.link.split('/')[3]}-checkbox">
-            <table>
-              <tbody>
-                <tr>
-                  <th>是否勾选</th>
-                  <td>
-                    <input
-                      type="checkbox"
-                      name={pages.link.split("/")[3]}
-                      value={index}
-                      id="{pages.link.split('/')[3]}-checkbox"
-                      bind:group={deletedPagesLink}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <th>文章标题</th>
-                  <td>{pages.title}</td>
-                </tr>
-                <tr>
-                  <th>文章链接</th>
-                  <td>
-                    <a href={pages.link} target="_blank" rel="noopener noreferrer">{pages.link}</a>
-                  </td>
-                </tr>
-                <tr>
-                  <th>文章源代码</th>
-                  <td><textarea id="page-source">{pages.context}</textarea></td>
-                </tr>
-                <tr>
-                  <th>页面分数</th>
-                  <td>{pages.release_score} -> {pages.score}</td>
-                </tr>
-                <tr>
-                  <th>文章类型</th>
-                  <td>
-                    {#each pages.page_type as types}
-                      {#if types == "minusThirty"}
-                        <input
-                          type="radio"
-                          name={pages.link.split("/")[3]}
-                          id="{pages.link.split('/')[3]}-minusThirty"
-                          value="minusThirty"
-                          bind:group={deletedPagesType[index]}
-                        /><label for="{pages.link.split('/')[3]}-minusThirty"> 低于-30</label>
-                      {/if}
-                      {#if types == "normal"}
-                        <input
-                          type="radio"
-                          name={pages.link.split("/")[3]}
-                          id="{pages.link.split('/')[3]}-normal"
-                          value="normal"
-                          bind:group={deletedPagesType[index]}
-                        /><label for="{pages.link.split('/')[3]}-normal"> 低分原创</label>
-                      {/if}
-                      {#if types == "translate"}
-                        <input
-                          type="radio"
-                          name={pages.link.split("/")[3]}
-                          id="{pages.link.split('/')[3]}-translate"
-                          value="translate"
-                          bind:group={deletedPagesType[index]}
-                        /><label for="{pages.link.split('/')[3]}-translate"> 低质翻译</label>
-                      {/if}
-                      {#if types == "deleted"}
-                        <input
-                          type="radio"
-                          name={pages.link.split("/")[3]}
-                          id="{pages.link.split('/')[3]}-deleted"
-                          value="deleted"
-                          bind:group={deletedPagesType[index]}
-                        /><label for="{pages.link.split('/')[3]}-deleted"> 自删页面</label>
-                      {/if}
-                    {/each}
-                    | {pages.time}小时后删除
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </label>
-        </blockquote>
-      {/each}
-      <hr />
-      {#each pagesJson.pre_delete_pages as pages, index}
-        <blockquote>
-          <table>
-            <tbody>
-              <tr>
-                <th>文章标题</th>
-                <td>{pages.title}</td>
-              </tr>
-              <tr>
-                <th>文章链接</th>
-                <td>
-                  <a href={pages.link} target="_blank" rel="noopener noreferrer">{pages.link}</a>
-                </td>
-              </tr>
-              <tr>
-                <th>删除倒计时</th>
-                <td class="countdown">
-                  <span class="warning">{timerTexts[index].warning}</span>
-                  <span class="text {timerTexts[index].status}">{timerTexts[index].text}</span><br />
-                  <span class="timer">{timerTexts[index].timer}</span>
-                </td>
-              </tr>
-              <tr>
-                <th>删除帖链接</th>
-                <td>
-                  <a href="{pages.discuss_link}#{pages.post_id}" target="_blank" rel="noopener noreferrer">
-                    {pages.discuss_link}#{pages.post_id}
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <th>页面分数</th>
-                <td>{pages.release_score} -> {pages.score}</td>
-              </tr>
-              <tr>
-                <th>文章类型</th>
-                <td>{pages.isOriginal ? "原创文章" : "翻译文章"} | {pages.time}小时后删除</td>
-              </tr>
-            </tbody>
-          </table>
-        </blockquote>
-      {/each}
-    {:else}
-      <blockquote>正在加载中，请稍候……</blockquote>
-    {/if}
-  </div>
-
-  {#if copyStatus.isVisible}
-    <div
-      class="copy-text"
-      transition:fly={{ x: 40, duration: 700 }}
-      class:text-green-600={copyStatus.isSuccess}
-      class:text-red-600={!copyStatus.isSuccess}
-    >
-      {copyStatus.message}
+      {/if}
     </div>
-  {/if}
-</div>
+    <div class="relative w-full max-w-4xl" id="component-wrapper">
+      {#if pagesJson}
+        <div class="relative my-4 flex flex-col rounded-md border-2 border-gray-400 p-2 text-center">
+          <div class="flex flex-wrap justify-center gap-2">
+            <Button variant="outline" type="button" onclick={clickOutputSaintafox}>
+              点此生成并复制删除公告 - Saintafox 版
+            </Button>
+            <Button variant="outline" type="button" onclick={clickOutputAmbersight}>
+              点此生成并复制删除公告 - Ambersight 版
+            </Button>
+          </div>
+          <Textarea class="mt-4 max-h-100 w-full min-w-[min(80vw,50rem)]" bind:value={output} />
+        </div>
 
-<style lang="scss" type="text/scss">
-  @use "./page";
-</style>
+        {#each pagesJson.deleted_pages as pages, index}
+          <blockquote class="relative my-4 flex flex-col rounded-md border-2 border-gray-400 p-2">
+            <Label>
+              <Table class="w-[calc(100%-1rem)]">
+                <TableBody class="[&_td]:w-full">
+                  <TableRow>
+                    <TableHead>是否勾选</TableHead>
+                    <TableCell>
+                      <Checkbox
+                        bind:checked={
+                          () => selectedPagesIndex.includes(index),
+                          (checked) => {
+                            if (checked) {
+                              selectedPagesIndex = [...selectedPagesIndex, index];
+                            } else {
+                              selectedPagesIndex = selectedPagesIndex.filter((i) => i !== index);
+                            }
+                          }
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableHead>文章标题</TableHead>
+                    <TableCell>{pages.title}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableHead>文章链接</TableHead>
+                    <TableCell>
+                      <Button variant="link" class="px-0" href={pages.link} target="_blank" rel="noopener noreferrer">
+                        {pages.link}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableHead>文章源代码</TableHead>
+                    <TableCell>
+                      <Textarea class="max-h-4 w-full max-w-full" value={pages.context} />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableHead>页面分数</TableHead>
+                    <TableCell>{pages.release_score} -&gt; {pages.score}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableHead>文章类型</TableHead>
+                    <TableCell>
+                      <div class="flex gap-2">
+                        <RadioGroup
+                          class="flex gap-2"
+                          value={selectedPagesType[index]}
+                          onValueChange={(value: string): string => (selectedPagesType[index] = value)}
+                        >
+                          {#if pages.page_type.includes("minusThirty")}
+                            <Label><RadioGroupItem value="minusThirty" /> <span>低于-30</span></Label>
+                          {/if}
+                          {#if pages.page_type.includes("normal")}
+                            <Label><RadioGroupItem value="normal" /> <span>低分原创</span></Label>
+                          {/if}
+                          {#if pages.page_type.includes("translate")}
+                            <Label><RadioGroupItem value="translate" /> <span>低质翻译</span></Label>
+                          {/if}
+                          {#if pages.page_type.includes("deleted")}
+                            <Label><RadioGroupItem value="deleted" /> <span>自删页面</span></Label>
+                          {/if}
+                        </RadioGroup>
+                        <span>| {pages.time}小时后删除</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Label>
+          </blockquote>
+        {/each}
+        <hr />
+        {#each pagesJson.pre_delete_pages as pages}
+          <blockquote class="relative my-4 flex flex-col rounded-md border-2 border-gray-400 p-2">
+            <Table>
+              <TableBody class="[&_td]:w-full">
+                <TableRow>
+                  <TableHead>文章标题</TableHead>
+                  <TableCell>{pages.title}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableHead>文章链接</TableHead>
+                  <TableCell>
+                    <Button variant="link" class="px-0" href={pages.link} target="_blank" rel="noopener noreferrer">
+                      {pages.link}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableHead>删除倒计时</TableHead>
+                  <TableCell>
+                    <Timer type="delete" time={new Date(pages.timestamp * 1000)} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableHead>删除帖链接</TableHead>
+                  <TableCell>
+                    <Button
+                      variant="link"
+                      class="px-0"
+                      href="{pages.discuss_link}#{pages.post_id}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {pages.discuss_link}#{pages.post_id}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableHead>页面分数</TableHead>
+                  <TableCell>{pages.release_score} -> {pages.score}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableHead>文章类型</TableHead>
+                  <TableCell>{pages.isOriginal ? "原创文章" : "翻译文章"} | {pages.time}小时后删除</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </blockquote>
+        {/each}
+      {:else}
+        <blockquote>正在加载中，请稍候……</blockquote>
+      {/if}
+    </div>
+  </div>
+</div>

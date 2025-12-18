@@ -1,230 +1,205 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  import { fly } from "svelte/transition";
   import Sidebar from "../Sidebar.svelte";
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 
-  let whenTypes: string = "delete";
-  let afterTypes: string = "delete";
+  import { page } from "$app/state";
+  import { Button } from "$lib/components/ui/button";
+  import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
+  import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "$lib/components/ui/card";
+  import { Label } from "$lib/components/ui/label";
+  import { RadioGroup, RadioGroupItem } from "$lib/components/ui/radio-group";
+  import { Separator } from "$lib/components/ui/separator";
+  import { Calendar } from "$lib/components/ui/calendar";
+  import { Input } from "$lib/components/ui/input";
+  import { Popover, PopoverTrigger, PopoverContent } from "$lib/components/ui/popover";
+  import { CalendarDate, today, getLocalTimeZone, CalendarDateTime, parseTime, now } from "@internationalized/date";
+  import { toast } from "svelte-sonner";
 
-  let now: Date = new Date();
+  let selectedType: string = $state("delete");
 
-  let selectedDate: string = `${now.getFullYear()}-${now.getMonth() + 1 < 10 ? `0${now.getMonth() + 1}` : now.getMonth() + 1}-${now.getDate() < 10 ? `0${now.getDate()}` : now.getDate()}`;
-  let seletedTime: string = `${now.getHours() < 10 ? `0${now.getHours()}` : now.getHours()}:${now.getMinutes() < 10 ? `0${now.getMinutes()}` : now.getMinutes()}`;
+  let whenCalendarValue: CalendarDate = $state(today(getLocalTimeZone()));
+  let isWhenCalendarOpen: boolean = $state(false);
+  let whenTimeString: string = $state(new Date().toLocaleTimeString());
 
-  let yearOptions: number[] = [];
-  for (let i = 0; i <= 20; i++) {
-    yearOptions.push(i);
+  let afterPeriod = $state({ years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  let customText: { before: string; after: string } = $state({ before: "", after: "" });
+
+  let outputLink: string = $state("");
+  const generate = (type: "when" | "after"): void => {
+    let whenOutputCalendar = new CalendarDateTime(
+      whenCalendarValue.year,
+      whenCalendarValue.month,
+      whenCalendarValue.day,
+      parseTime(whenTimeString).hour,
+      parseTime(whenTimeString).minute,
+      parseTime(whenTimeString).second,
+    );
+    const whenOutputTime = whenOutputCalendar.toDate(getLocalTimeZone()).toISOString();
+    const afterOutputTime = now(getLocalTimeZone()).add(afterPeriod).toDate().toISOString();
+
+    outputLink =
+      `${page.url.origin}/timer/time=${type === "when" ? whenOutputTime : afterOutputTime}/type=${selectedType}` +
+      (selectedType === "custom" ?
+        (customText.before && `/customBefore=${customText.before}`) +
+        (customText.after && `/customAfter=${customText.after}`)
+      : "");
+  };
+
+  const outputText = $derived(() => [
+    `[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`,
+    `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`,
+    `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`,
+    `由于条目的分数为X分，且距离发布时间已满1个月，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`,
+  ]);
+
+  async function copyHandler(output: string): Promise<void> {
+    try {
+      if (!navigator.clipboard) {
+        throw new Error("浏览器不支持剪贴板API");
+      }
+
+      await navigator.clipboard.writeText(output);
+      toast.success("复制成功！");
+    } catch (error) {
+      console.error("复制失败:", error);
+      toast.error("复制失败，请手动复制");
+    }
   }
-
-  let monthOptions: number[] = [];
-  for (let i = 0; i <= 12; i++) {
-    monthOptions.push(i);
-  }
-
-  let dateOptions: number[] = [];
-  for (let i = 0; i <= 31; i++) {
-    dateOptions.push(i);
-  }
-
-  let hourOptions: number[] = [];
-  for (let i = 0; i <= 24; i++) {
-    hourOptions.push(i);
-  }
-
-  let minuteOptions: number[] = [];
-  for (let i = 0; i <= 60; i++) {
-    minuteOptions.push(i);
-  }
-
-  let aftertimes: number[] = [0, 0, 3, 0, 0];
-
-  let whenCustom: string[] = ["", ""];
-  let afterCustom: string[] = ["", ""];
-  let generated: boolean = false;
-  let outputLink: string = "";
-
-  let isCopySucc: boolean;
-  let isCopied: boolean;
 </script>
 
-<Sidebar type="generator" />
-
-<div id="main-wrapper">
-  <h1 class="title">倒计时生成器</h1>
-  <div class="info">
-    <b>
-      原作者：Aelanna（<a href="http://aelanna.com/Tools/deletion-time.html">
-        http://aelanna.com/Tools/deletion-time.html
-      </a>）
-    </b>
-    <br />
-    <b>重制版作者：hoah2333</b>
-  </div>
-  <div id="component-wrapper">
-    <div class="whentime">
-      <fieldset id="whentime-field">
-        <legend>在特定时间到达时删除</legend>
-        <div class="timer-type">
-          <span>计时器类型：</span>
-          {#each [{ type: "delete", name: "删除计时器 —" }, { type: "ban", name: "封禁计时器 —" }, { type: "custom", name: "自定义计时器" }] as types}
-            <input type="radio" id="when-{types.type}" value={types.type} bind:group={whenTypes} /><label
-              for="when-{types.type}">{types.name}</label
-            >
-          {/each}
-        </div>
-        {#if whenTypes == "custom"}
-          <div class="timer-custom">
-            <span>自定义文本 - 计时结束前：</span>
-            <input
-              type="text"
-              name="whentime"
-              id="when-custom-before"
-              placeholder="该计时器将在以下时间后到期："
-              bind:value={whenCustom[0]}
-            />
-            <br />
-            <span>自定义文本 - 计时结束后：</span>
-            <input
-              type="text"
-              name="whentime"
-              id="when-custom-after"
-              placeholder="该计时器已在以下时间前到期："
-              bind:value={whenCustom[1]}
-            />
-          </div>
-        {/if}
-        <div class="timer-time">
-          <span>
-            {whenTypes == "delete" ? "页面删除时间："
-            : whenTypes == "ban" ? "封禁到期时间："
-            : "计时器结束时间："}
-          </span>
-
-          <input type="date" bind:value={selectedDate} />
-          <input type="time" bind:value={seletedTime} />
-        </div>
-        <button
-          type="button"
-          on:click={() => {
-            generated = true;
-            let outputDate = new Date(`${selectedDate} ${seletedTime}`).toISOString();
-            outputLink =
-              `${$page.url.origin}/timer/time=${outputDate}/type=${whenTypes}` +
-              (whenCustom[0] == "" || whenTypes != "custom" ? "" : `/customBefore=${whenCustom[0]}`) +
-              (whenCustom[1] == "" || whenTypes != "custom" ? "" : `/customAfter=${whenCustom[1]}`);
-          }}
+{#snippet cardBlock(type: "when" | "after")}
+  <Card>
+    <CardContent class="flex flex-col gap-6">
+      <div class="flex flex-col gap-3">
+        <Label class="mb-2">计时器类型：</Label>
+        <RadioGroup
+          value={selectedType}
+          onValueChange={(value: string): string => (selectedType = value)}
+          class="flex h-5 justify-between"
         >
-          生成！
-        </button>
-      </fieldset>
-    </div>
-    <br />
-    <div class="aftertime">
-      <fieldset id="aftertime-field">
-        <legend>在特定时间段之后删除</legend>
-        <div class="timer-type">
-          <span>计时器类型：</span>
-          {#each [{ type: "delete", name: "删除计时器 —" }, { type: "ban", name: "封禁计时器 —" }, { type: "custom", name: "自定义计时器" }] as types}
-            <input type="radio" id="after-{types.type}" value={types.type} bind:group={afterTypes} /><label
-              for="after-{types.type}">{types.name}</label
-            >
-          {/each}
-        </div>
-        {#if afterTypes == "custom"}
-          <div class="timer-custom">
-            <span>自定义文本 - 计时结束前：</span>
-            <input
-              type="text"
-              name="aftertime"
-              id="after-custom-before"
-              placeholder="该计时器将在以下时间后到期："
-              bind:value={afterCustom[0]}
-            />
-            <br />
-            <span>自定义文本 - 计时结束后：</span>
-            <input
-              type="text"
-              name="aftertime"
-              id="after-custom-after"
-              placeholder="该计时器已在以下时间前到期："
-              bind:value={afterCustom[1]}
-            />
-          </div>
-        {/if}
-        <div class="timer-time">
-          <span
-            >{afterTypes == "delete" ? "在以下时间段后删除页面："
-            : afterTypes == "ban" ? "在以下时间段后解除封禁："
-            : "在以下时间段后结束计时："}</span
-          >
-          {#each [{ id: 0, type: "year", string: "年", options: yearOptions }, { id: 1, type: "month", string: "月", options: monthOptions }, { id: 2, type: "date", string: "日", options: dateOptions }, { id: 3, type: "hour", string: "时", options: hourOptions }, { id: 4, type: "minute", string: "分", options: minuteOptions }] as times}
-            <select name={times.type} id="after-{times.type}" bind:value={aftertimes[times.id]}>
-              {#each times.options as options}
-                <option value={options}>{options}</option>
-              {/each}
-            </select><label for="after-{times.type}">{times.string}</label>
-          {/each}
-        </div>
-        <button
-          type="button"
-          on:click={() => {
-            generated = true;
-            now = new Date();
-            let outputDate = new Date(
-              now.getFullYear() + aftertimes[0],
-              now.getMonth() + aftertimes[1],
-              now.getDate() + aftertimes[2],
-              now.getHours() + aftertimes[3],
-              now.getMinutes() + aftertimes[4],
-              now.getSeconds(),
-            ).toISOString();
-            outputLink =
-              `${$page.url.origin}/timer/time=${outputDate}/type=${afterTypes}` +
-              (afterCustom[0] == "" || afterTypes != "custom" ? "" : `/customBefore=${afterCustom[0]}`) +
-              (afterCustom[1] == "" || afterTypes != "custom" ? "" : `/customAfter=${afterCustom[1]}`);
-          }}>生成！</button
-        >
-      </fieldset>
-    </div>
-
-    {#if generated}
-      <div class="generated">
-        <hr />
-        {#each [`[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`, `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`, `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]`, `由于条目的分数为X分，且距离发布时间已满1个月，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 65px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`] as outputs}
-          <blockquote>
-            <a
-              href="/"
-              on:click={async (event) => {
-                event.preventDefault();
-                isCopied = true;
-                setTimeout(() => {
-                  isCopied = false;
-                }, 3000);
-                try {
-                  await navigator.clipboard.writeText(outputs);
-                  isCopySucc = true;
-                } catch (e) {
-                  console.error("复制失败", e);
-                  isCopySucc = false;
-                }
-              }}
-            >
-              {outputs}
-            </a>
-          </blockquote>
-        {/each}
-        <iframe title="generated-iframe" src={outputLink} frameborder="0" width="400px" height="65px" />
+          <Label><RadioGroupItem value="delete" /><span>删除计时器</span></Label>
+          <Separator orientation="vertical" />
+          <Label><RadioGroupItem value="ban" /><span>封禁计时器</span></Label>
+          <Separator orientation="vertical" />
+          <Label><RadioGroupItem value="custom" /><span>自定义计时器</span></Label>
+        </RadioGroup>
       </div>
-    {/if}
+      <div class="flex flex-col gap-3">
+        {#if selectedType === "custom"}
+          <div class="flex flex-col gap-3">
+            <Label>自定义文本：</Label>
+            <div class="flex flex-col gap-3">
+              <Input type="text" placeholder="计时结束前" bind:value={customText.before} />
+              <Input type="text" placeholder="计时结束后" bind:value={customText.after} />
+            </div>
+          </div>
+        {/if}
 
-    {#if isCopied}
-      <div class="copy-text" transition:fly={{ x: 40, duration: 700 }}>
-        {isCopySucc ? "复制成功！" : "复制失败！"}
+        {#if type === "when"}
+          {@render whenSelect()}
+        {/if}
+        {#if type === "after"}
+          {@render afterSelect()}
+        {/if}
+      </div>
+    </CardContent>
+    <CardFooter>
+      <Button onclick={(): void => generate(type)}>生成！</Button>
+    </CardFooter>
+  </Card>
+{/snippet}
+
+{#snippet whenSelect()}
+  <Label>
+    {selectedType === "delete" ? "页面删除时间："
+    : selectedType === "ban" ? "封禁到期时间："
+    : "计时器结束时间："}
+  </Label>
+  <div class="flex gap-4">
+    <Popover bind:open={isWhenCalendarOpen}>
+      <PopoverTrigger>
+        <Button variant="outline" class="w-32 justify-between font-normal">
+          {whenCalendarValue ? whenCalendarValue.toDate(getLocalTimeZone()).toLocaleDateString() : "请选择日期"}
+          <ChevronDownIcon />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent class="w-auto overflow-hidden p-0" align="start">
+        <Calendar
+          type="single"
+          bind:value={whenCalendarValue}
+          onValueChange={() => (isWhenCalendarOpen = false)}
+          captionLayout="dropdown"
+        />
+      </PopoverContent>
+    </Popover>
+    <Input
+      type="time"
+      step="1"
+      bind:value={whenTimeString}
+      class="appearance-none border-ring bg-secondary [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+    />
+  </div>
+{/snippet}
+
+{#snippet afterSelect()}
+  <Label>
+    在以下时间段后{selectedType === "delete" ? "删除页面"
+    : selectedType === "ban" ? "解除封禁"
+    : "结束计时"}：
+  </Label>
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-2">
+      <Input class="max-w-16" type="number" step="1" min="0" bind:value={afterPeriod.years} />年
+      <Input class="max-w-16" type="number" step="1" min="0" bind:value={afterPeriod.months} />月
+      <Input class="max-w-16" type="number" step="1" min="0" bind:value={afterPeriod.days} />日
+    </div>
+    <div class="flex items-center gap-2">
+      <Input class="max-w-16" type="number" step="1" min="0" bind:value={afterPeriod.hours} />时
+      <Input class="max-w-16" type="number" step="1" min="0" bind:value={afterPeriod.minutes} />分
+      <Input class="max-w-16" type="number" step="1" min="0" bind:value={afterPeriod.seconds} />秒
+    </div>
+  </div>
+{/snippet}
+
+<div class="flex flex-col justify-center gap-4 md:flex-row">
+  <Sidebar type="generator" />
+
+  <div class="align-center mt-4 flex w-3xl max-w-full flex-col items-center justify-center">
+    <h1 class="text-2xl font-bold">倒计时生成器</h1>
+    <div class="mt-2 text-sm">
+      <div>
+        原作者：<Button class="p-0" variant="link" href="http://aelanna.com/Tools/deletion-time.html" target="_blank">
+          Aelanna（http://aelanna.com/Tools/deletion-time.html）
+        </Button>
+      </div>
+      <div>重制版作者：hoah2333</div>
+    </div>
+
+    <div class="mt-4">
+      <Tabs value="when">
+        <TabsList>
+          <TabsTrigger value="when">在特定时间到达时删除</TabsTrigger>
+          <TabsTrigger value="after">在特定时间段之后删除</TabsTrigger>
+        </TabsList>
+        <TabsContent value="when">
+          {@render cardBlock("when")}
+        </TabsContent>
+        <TabsContent value="after">
+          {@render cardBlock("after")}
+        </TabsContent>
+      </Tabs>
+    </div>
+
+    {#if outputLink}
+      <Separator class="mt-8" />
+      <div class="mt-4">
+        <div class="font-bold">点击文本框复制</div>
+        {#each outputText() as text}
+          <Button variant="ghost" class="rounded-md border-2 border-gray-400 my-2 whitespace-pre-wrap flex justify-start h-max items-start text-start w-full text-base font-normal" onclick={() => copyHandler(text)}>{text}</Button>
+        {/each}
+        <iframe title="generated-iframe" src={outputLink} frameborder="0" width="400px" height="65px"></iframe>
       </div>
     {/if}
   </div>
 </div>
-
-<style lang="scss" type="text/scss">
-  @import "./page";
-</style>
