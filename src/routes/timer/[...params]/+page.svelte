@@ -63,3 +63,9 @@
     ></iframe>
   {/if}
 </div>
+
+<style lang="css" type="text/css">
+  :global(body) {
+    background-color: transparent;
+  }
+</style>
