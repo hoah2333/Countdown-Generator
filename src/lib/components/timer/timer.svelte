@@ -21,7 +21,7 @@
 
   let statusText: StatusTextMapType = $derived({
     delete: { before: "该页面将在以下时间后被删除：", after: "该页面已在以下时间前可被删除：" },
-    ban: { before: "该用户将在以下时间后被封禁：", after: "该用户已在以下时间前可被封禁：" },
+    ban: { before: "该用户将在以下时间后解除封禁：", after: "该用户已在以下时间前解除封禁：" },
     custom: {
       before: custom?.before ?? "该计时器将在以下时间后到期：",
       after: custom?.after ?? "该计时器已在以下时间前到期：",
