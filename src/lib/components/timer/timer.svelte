@@ -53,9 +53,9 @@
   });
 </script>
 
-<div>
+<div class="timer">
   {#if time !== ""}
-    <div class={timerTime < 0 ? "text-red-500" : "text-green-500"}>
+    <div class={timerTime < 0 ? "text-red-500 font-bold" : "text-green-500 font-bold"}>
       {statusText[type][timerTime < 0 ? "before" : "after"]}
     </div>
     <div class="text-xl font-bold">
@@ -65,3 +65,12 @@
     <div class="text-xl text-red-500">缺少参数：time，请检查链接参数。</div>
   {/if}
 </div>
+
+<style>
+  .timer {
+    padding: 10px 16px;
+    border: 2px solid rgba(25, 20, 16, 0.25);
+    /* background-color: rgba(227, 223, 213); */
+    background-color: rgba(255, 251, 240);
+  }
+</style>

@@ -66,6 +66,6 @@
 
 <style lang="css" type="text/css">
   :global(body) {
-    background-color: transparent;
+    background-color: rgba(227, 223, 213);
   }
 </style>
