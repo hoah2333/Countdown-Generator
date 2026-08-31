@@ -53,9 +53,9 @@
   });
 </script>
 
-<div>
+<div class="py-2.5 px-4 border-2 border-[rgba(25,20,16,0.25)] bg-[rgba(255,251,240)]">
   {#if time !== ""}
-    <div class={timerTime < 0 ? "text-red-500" : "text-green-500"}>
+    <div class={timerTime < 0 ? "text-red-500 font-bold" : "text-green-500 font-bold"}>
       {statusText[type][timerTime < 0 ? "before" : "after"]}
     </div>
     <div class="text-xl font-bold">
