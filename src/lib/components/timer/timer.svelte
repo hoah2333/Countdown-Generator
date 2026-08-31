@@ -53,7 +53,7 @@
   });
 </script>
 
-<div class="timer">
+<div class="py-2.5 px-4 border-2 border-[rgba(25,20,16,0.25)] bg-[rgba(255,251,240)]">
   {#if time !== ""}
     <div class={timerTime < 0 ? "text-red-500 font-bold" : "text-green-500 font-bold"}>
       {statusText[type][timerTime < 0 ? "before" : "after"]}
@@ -65,12 +65,3 @@
     <div class="text-xl text-red-500">缺少参数：time，请检查链接参数。</div>
   {/if}
 </div>
-
-<style>
-  .timer {
-    padding: 10px 16px;
-    border: 2px solid rgba(25, 20, 16, 0.25);
-    /* background-color: rgba(227, 223, 213); */
-    background-color: rgba(255, 251, 240);
-  }
-</style>
