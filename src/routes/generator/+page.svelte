@@ -46,11 +46,21 @@
       : "");
   };
 
+  const iframeWidth = "400px";
+  const iframeHeight = "76px";
+  const generateIframe = (
+    link: string = outputLink,
+    width: string = iframeWidth,
+    height: string = iframeHeight,
+  ): string => {
+    return `[[iframe ${link} style="width: ${width}; height: ${height};"]]`;
+  };
+
   const outputText = $derived(() => [
-    `[[iframe ${outputLink} style="width: 400px; height: 76px;"]]`,
-    `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 76px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`,
-    `由于翻译质量不佳，宣告删除。\n[[iframe ${outputLink} style="width: 400px; height: 76px;"]]`,
-    `由于条目的分数为X分，且距离发布时间已满1个月，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n[[iframe ${outputLink} style="width: 400px; height: 76px;"]]\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`,
+    generateIframe(),
+    `由于条目的分数为-X分，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n${generateIframe()}\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`,
+    `由于翻译质量不佳，宣告删除。\n${generateIframe()}`,
+    `由于条目的分数为X分，且距离发布时间已满1个月，现根据[[[deletions-policy|删除政策]]]，宣告将删除此页：\n${generateIframe()}\n如果你不是作者又想要重写该条目，请在此帖回复申请。请先取得作者的同意，并将原文的源代码复制至沙盒里。除非你是工作人员，否则请勿就申请重写以外的范围回复此帖。`,
   ]);
 
   async function copyHandler(output: string): Promise<void> {
